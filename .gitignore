@@ -16,14 +16,6 @@ venv/
 ENV/
 env/
 
-# Project specific
-temp/
-*.wav
-*.mp3
-temp_*
-current_frame.jpg
-profiles/
-
 # Databases
 chroma_db/
 *.db
@@ -50,3 +42,13 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Project specific
+temp/
+*.wav
+*.mp3
+temp_*
+current_frame.jpg
+profiles/
+Dockerfile-2
+app.py
