@@ -1,0 +1,39 @@
+# Web & API Framework
+fastapi==0.133.1
+uvicorn>=0.34.0
+pydantic-settings>=2.7.0
+
+# LLM & Orchestration (2026 Stable)
+openai>=1.60.0
+langchain-openai>=0.3.0
+langchain-google-genai>=2.0.0
+langchain-community>=0.3.0
+langsmith>=0.3.0
+langchain-core==1.2.16
+
+# Vector Database & Data Science
+chromadb>=0.6.0
+numpy>=2.1.0
+scipy>=1.14.0
+
+# Audio & Speech Processing
+librosa>=0.10.2
+SpeechRecognition>=3.10.4
+pyttsx3>=2.90
+pyaudio~=0.2.14
+openai-whisper>=20240930
+sounddevice>=0.5.0
+
+# Computer Vision & Deep Learning
+deepface>=0.0.92
+tf-keras==2.20.1
+opencv-python~=4.10.0
+
+# Utilities & Async
+e2b_code_interpreter>=0.0.10
+aiofiles>=24.1.0
+python-multipart>=0.0.20
+websockets>=14.0
+
+# Core Build & Package Management
+setuptools>=75.0.0
