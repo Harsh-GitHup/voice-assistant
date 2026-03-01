@@ -18,12 +18,15 @@ def wish_user():
         speak("Good morning!")
     elif 12 <= hour < 18:
         speak("Good afternoon!")
-    else:
+    elif 18 <= hour < 20:
         speak("Good evening!")
+    else:
+        speak("Good night!")
     speak("How can I assist you?")
 
 # Function to listen for user commands and return the recognized text
 def listen_command():
+    # Initialize the speech recognition engine
     r = sr.Recognizer()
     with sr.Microphone() as source:
         print("Listening...")
@@ -53,8 +56,11 @@ def process_command(command):
     elif "search" in command:
         search_query = command.split("search")[-1].strip()
         search_web(search_query)
+    elif "exit" in command:
+        speak("Goodbye!")
+        exit()
     else:
-        speak("I'm sorry, I couldn't understand your command.")
+        speak("Sorry, I didn't catch that. Can you please repeat?")
 
 # Function to search the web using the default browser
 def search_web(query):
