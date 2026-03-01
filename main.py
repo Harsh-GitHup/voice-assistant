@@ -38,8 +38,11 @@ def listen_command():
         query = r.recognize_google(audio, language="en-US")
         print(f"You said: {query}\n")
         return query
-    except Exception as e:
+    except sr.UnknownValueError as e:
         print("I'm sorry, I couldn't understand your command. Please try again.", e)
+        return None
+    except sr.RequestError as e:
+        print("Sorry, there was an issue with the speech recognition service.", e)
         return None
 
 # Function to process the user's command and execute corresponding actions
