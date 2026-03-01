@@ -17,14 +17,12 @@ def speak(text):
 # Function to greet the user based on the current time of day
 def wish_user():
     hour = datetime.datetime.now().hour
-    if 0 <= hour < 12:
+    if 5 <= hour < 12:
         speak("Good morning!")
     elif 12 <= hour < 18:
         speak("Good afternoon!")
-    elif 18 <= hour < 20:
-        speak("Good evening!")
     else:
-        speak("Good night!")
+        speak("Good evening!")
     speak("How can I assist you?")
 
 # Function to listen for user commands and return the recognized text
@@ -64,7 +62,11 @@ def process_command(command):
         search_query = command.split("search")[-1].strip()
         search_web(search_query)
     elif "exit" in command:
-        speak("Goodbye!")
+        hour = datetime.datetime.now().hour
+        if 19 <= hour < 24 or 0 <= hour < 5:
+            speak("Good night!")
+        else:
+            speak("Goodbye!")
         exit()
     else:
         speak("Sorry, I didn't catch that. Can you please repeat?")
