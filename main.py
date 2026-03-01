@@ -57,10 +57,13 @@ def process_command(command):
     elif "date" in command:
         current_date = datetime.datetime.now().strftime("%d-%m-%Y")
         speak(f"The current date is {current_date}")
-    elif 'open youtube' in command:
-        webbrowser.open("youtube.com")
-    elif 'open google' in command:
-        webbrowser.open("google.com")
+    elif 'open' in command:
+        if 'youtube' in command:
+            webbrowser.open("youtube.com")
+        elif 'google' in command:
+            webbrowser.open("google.com") 
+        else:
+            speak("Sorry, I can only open YouTube and Google at the moment.")
     elif "search" in command:
         if 'on wikipedia' in command:
             search_query = command.replace("wikipedia", "").strip()
@@ -94,9 +97,13 @@ def search_wikipedia(query):
         speak("According to Wikipedia")
         print(results)
         speak(results)
+    except wikipedia.exceptions.DisambiguationError:
+        speak("Multiple Wikipedia results found. Please be more specific.")
+    except wikipedia.exceptions.PageError:
+        speak("No Wikipedia results found.")
     except Exception as e:
-        print("Sorry, I couldn't find any information on that topic.", e)
-        speak("Sorry, I couldn't find any information on that topic.")
+        speak("Sorry, I couldn't find any information on this topic.")
+        print("Sorry, I couldn't find any information on this topic.", e)
     # pass
 
 # Main program
