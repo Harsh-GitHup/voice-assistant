@@ -56,6 +56,10 @@ def process_command(command):
     elif "date" in command:
         current_date = datetime.datetime.now().strftime("%d-%m-%Y")
         speak(f"The current date is {current_date}")
+    elif 'open youtube' in command:
+        webbrowser.open("youtube.com")
+    elif 'open google' in command:
+        webbrowser.open("google.com")
     elif "search" in command:
         search_query = command.split("search")[-1].strip()
         search_web(search_query)
