@@ -1,13 +1,16 @@
-import pyttsx3
 import datetime
 import speech_recognition as sr
 import webbrowser
 
-# Initialize text-to-speech engine
-engine = pyttsx3.init()
-
 # Function to convert text to speech
 def speak(text):
+    import pyttsx3
+    # Initialize text-to-speech engine
+    engine = pyttsx3.init()
+    # Set the default voice for text-to-speech synthesis
+    voices = engine.getProperty('voices')
+    # Change the index to use a different voice if needed
+    engine.setProperty('voice', voices[0].id)
     engine.say(text)
     engine.runAndWait()
 
@@ -39,7 +42,7 @@ def listen_command():
         return query
     except Exception as e:
         print("I'm sorry, I couldn't understand your command. Please try again.", e)
-        return ""
+        return None
 
 # Function to process the user's command and execute corresponding actions
 def process_command(command):
