@@ -59,8 +59,12 @@ def process_command(command):
     elif 'open google' in command:
         webbrowser.open("google.com")
     elif "search" in command:
-        search_query = command.split("search")[-1].strip()
-        search_web(search_query)
+        if 'on wikipedia' in command:
+            search_query = command.replace("wikipedia", "").strip()
+            search_wikipedia(search_query)
+        else:
+            search_query = command.split("search")[-1].strip()
+            search_web(search_query)
     elif "exit" in command:
         hour = datetime.datetime.now().hour
         if 19 <= hour < 24 or 0 <= hour < 5:
@@ -77,6 +81,20 @@ def search_web(query):
     url = "https://www.google.com/search?q=" + query
     webbrowser.open(url)
 
+
+# Function to search Wikipedia and return a summary of the topic
+def search_wikipedia(query):
+    import wikipedia
+    speak(f"Searching Wikipedia for {query}...")
+    try:
+        results = wikipedia.summary(query, sentences=2)
+        speak("According to Wikipedia")
+        print(results)
+        speak(results)
+    except Exception as e:
+        print("Sorry, I couldn't find any information on that topic.", e)
+        speak("Sorry, I couldn't find any information on that topic.")
+    # pass
 
 # Main program
 if __name__ == "__main__":

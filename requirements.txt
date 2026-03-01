@@ -34,6 +34,7 @@ e2b_code_interpreter>=0.0.10
 aiofiles>=24.1.0
 python-multipart>=0.0.20
 websockets>=14.0
+wikipedia>=1.4.0
 
 # Core Build & Package Management
 setuptools>=75.0.0
