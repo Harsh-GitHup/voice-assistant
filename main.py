@@ -1,29 +1,31 @@
+import os
 import datetime
-import speech_recognition as sr
+import requests
+import wikipedia
 import webbrowser
+import pyttsx3
+import speech_recognition as sr
+from dotenv import load_dotenv
+load_dotenv()
+
+# Initialize text-to-speech engine
+engine = pyttsx3.init()
+# Set the default voice for text-to-speech synthesis
+voices = engine.getProperty('voices')
+# Change the index to use a different voice if needed
+engine.setProperty('voice', voices[0].id)
+
 
 # Function to convert text to speech
 def speak(text):
-    import pyttsx3
-    # Initialize text-to-speech engine
-    engine = pyttsx3.init()
-    # Set the default voice for text-to-speech synthesis
-    voices = engine.getProperty('voices')
-    # Change the index to use a different voice if needed
-    engine.setProperty('voice', voices[0].id)
     engine.say(text)
     engine.runAndWait()
 
 # Function to greet the user based on the current time of day
 def wish_user():
     hour = datetime.datetime.now().hour
-    if 5 <= hour < 12:
-        speak("Good morning!")
-    elif 12 <= hour < 18:
-        speak("Good afternoon!")
-    else:
-        speak("Good evening!")
-    speak("How can I assist you?")
+    greeting = "Good morning!" if 5 <= hour < 12 else "Good afternoon!" if 12 <= hour < 18 else "Good evening!"
+    speak(f"{greeting} How can I assist you?")
 
 # Function to listen for user commands and return the recognized text
 def listen_command():
@@ -31,6 +33,8 @@ def listen_command():
     r = sr.Recognizer()
     with sr.Microphone() as source:
         print("Listening...")
+        # Calibrate for background noise
+        r.adjust_for_ambient_noise(source, duration=1)
         r.pause_threshold = 1
         audio = r.listen(source)
     try:
@@ -71,7 +75,7 @@ def process_command(command):
         else:
             search_query = command.split("search")[-1].strip()
             search_web(search_query)
-    elif "exit" in command:
+    elif "exit" or "stop" in command:
         hour = datetime.datetime.now().hour
         if 19 <= hour < 24 or 0 <= hour < 5:
             speak("Good night!")
@@ -90,7 +94,6 @@ def search_web(query):
 
 # Function to search Wikipedia and return a summary of the topic
 def search_wikipedia(query):
-    import wikipedia
     speak(f"Searching Wikipedia for {query}...")
     try:
         results = wikipedia.summary(query, sentences=2)
