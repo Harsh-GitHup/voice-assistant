@@ -9,6 +9,7 @@ build/
 dist/
 wheels/
 *.egg-info
+.ruff_*/
 
 # Virtual environments
 .venv
@@ -48,6 +49,7 @@ temp/
 *.wav
 *.mp3
 temp_*
+.trunk/
 current_frame.jpg
 profiles/
 Dockerfile-2
