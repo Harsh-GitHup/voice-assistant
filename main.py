@@ -3,6 +3,7 @@ import datetime
 import os
 import smtplib
 import webbrowser
+from urllib.parse import quote_plus
 
 # Third-Party Imports
 import pyttsx3
@@ -43,12 +44,20 @@ def wish_user():
 def listen_command():
     # Initialize the speech recognition engine
     r = sr.Recognizer()
-    with sr.Microphone() as source:
-        print("Listening...")
-        # Calibrate for background noise
-        r.adjust_for_ambient_noise(source, duration=1)
-        r.pause_threshold = 1
-        audio = r.listen(source)
+    try:
+        with sr.Microphone() as source:
+            print("Listening...")
+            # Calibrate for background noise
+            r.adjust_for_ambient_noise(source, duration=1)
+            r.pause_threshold = 1
+            audio = r.listen(source)
+    except OSError as e:
+        print("Microphone is not available on this device.", e)
+        return None
+    except Exception as e:
+        print("Unable to capture audio input.", e)
+        return None
+
     try:
         print("Recognizing...")
         query = r.recognize_google(audio, language="en-US")
@@ -195,19 +204,25 @@ def get_weather():
     if not city_name:
         speak("I didn't catch the city name. Please try again.")
         return None
-    url = (
-        f"http://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={api_key}"
-    )
+    safe_city = quote_plus(city_name.strip())
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={safe_city}&appid={api_key}"
     try:
         response = requests.get(url, timeout=5).json()
-        weather_description = response["weather"][0]["description"]
-        temperature = response["main"]["temp"]
+        weather = response.get("weather")
+        main_data = response.get("main")
+        if not weather or not main_data:
+            speak("Sorry, I couldn't fetch weather details for that city.")
+            return None
+
+        weather_description = weather[0]["description"]
+        temperature = main_data["temp"]
         temperature = temperature - 273.15  # Convert from Kelvin to Celsius
         temperature = round(temperature, 2)
         speak(
             f"The temperature in {city_name} is {temperature} degrees Celsius. And the weather is {weather_description}."
         )
-    except requests.exceptions.RequestException:
+    except (requests.exceptions.RequestException, KeyError, TypeError, ValueError) as e:
+        print("Error fetching weather data:", e)
         speak(
             "Sorry, I couldn't fetch the weather. Please check your internet connection."
         )
