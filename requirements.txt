@@ -7,7 +7,6 @@ requests>=2.32.0
 # UI & Real-time Communication
 streamlit>=1.42.0
 streamlit-webrtc>=0.47.0
-tkinter>=0.1.0
 
 # LLM & Orchestration (2026 Stable)
 openai>=1.60.0
@@ -33,7 +32,6 @@ sounddevice>=0.5.0
 # Computer Vision & Deep Learning
 deepface>=0.0.92
 tf-keras==2.20.1
-opencv-python~=4.10.0
 opencv-python-headless~=4.10.0
 
 # Utilities & Async

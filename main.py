@@ -3,6 +3,7 @@ import datetime
 import os
 import smtplib
 import webbrowser
+from urllib.parse import quote_plus
 
 # Third-Party Imports
 import pyttsx3
@@ -16,33 +17,47 @@ load_dotenv()
 # Initialize text-to-speech engine
 engine = pyttsx3.init()
 # Set the default voice for text-to-speech synthesis
-voices = engine.getProperty('voices')
+voices = engine.getProperty("voices")
 # Change the index to use a different voice if needed
-engine.setProperty('voice', voices[0].id)
+engine.setProperty("voice", voices[0].id)
 
 
-#? Function to convert text to speech
+# ? Function to convert text to speech
 def speak(text):
     print("Assistant:", text)
     engine.say(text)
     engine.runAndWait()
 
-#? Function to greet the user based on the current time of day
+# ? Function to greet the user based on the current time of day
 def wish_user():
     hour = datetime.datetime.now().hour
-    greeting = "Good morning!" if 5 <= hour < 12 else "Good afternoon!" if 12 <= hour < 18 else "Good evening!"
+    greeting = (
+        "Good morning!"
+        if 5 <= hour < 12
+        else "Good afternoon!"
+        if 12 <= hour < 18
+        else "Good evening!"
+    )
     speak(f"{greeting} How can I assist you?")
 
-#? Function to listen for user commands and return the recognized text
+# ? Function to listen for user commands and return the recognized text
 def listen_command():
     # Initialize the speech recognition engine
     r = sr.Recognizer()
-    with sr.Microphone() as source:
-        print("Listening...")
-        # Calibrate for background noise
-        r.adjust_for_ambient_noise(source, duration=1)
-        r.pause_threshold = 1
-        audio = r.listen(source)
+    try:
+        with sr.Microphone() as source:
+            print("Listening...")
+            # Calibrate for background noise
+            r.adjust_for_ambient_noise(source, duration=1)
+            r.pause_threshold = 1
+            audio = r.listen(source)
+    except OSError as e:
+        print("Microphone is not available on this device.", e)
+        return None
+    except Exception as e:
+        print("Unable to capture audio input.", e)
+        return None
+
     try:
         print("Recognizing...")
         query = r.recognize_google(audio, language="en-US")
@@ -55,7 +70,7 @@ def listen_command():
         print("Sorry, there was an issue with the speech recognition service.", e)
         return None
 
-#? Function to process the user's command and execute corresponding actions
+# ? Function to process the user's command and execute corresponding actions
 def process_command(command):
     command = command.lower()
 
@@ -71,7 +86,9 @@ def process_command(command):
         get_weather()
     elif "send" in command:
         if "email" in command:
-            speak("Who should I send the email to? Please provide the recipient's email address.")
+            speak(
+                "Who should I send the email to? Please provide the recipient's email address."
+            )
             to = listen_command()
             speak("What is the subject?")
             subject = listen_command()
@@ -81,17 +98,17 @@ def process_command(command):
                 send_email(to, subject, body)
         else:
             speak("Sorry, I can only send emails at the moment.")
-    elif 'open' in command:
-        if 'app' in command:
-            app = command.split('app')[-1].strip()
+    elif "open" in command:
+        if "app" in command:
+            app = command.split("app")[-1].strip()
             open_app(app)
-        elif 'website' in command:
-            site = command.split('website')[-1].strip()
+        elif "website" in command:
+            site = command.split("website")[-1].strip()
             open_site(site)
         else:
             speak("Sorry, I can only open websites at the moment.")
     elif "search" in command:
-        if 'on wikipedia' in command:
+        if "on wikipedia" in command:
             search_query = command.replace("wikipedia", "").strip()
             search_wikipedia(search_query)
         else:
@@ -107,13 +124,13 @@ def process_command(command):
     else:
         speak("Sorry, I didn't catch that. Can you please repeat?")
 
-#? Function to search the web using the default browser
+# ? Function to search the web using the default browser
 def search_web(query):
     speak(f"Searching for {query} on the web...")
     url = "https://www.google.com/search?q=" + query
     webbrowser.open(url)
 
-#? Function to open a specified websites
+# ? Function to open a specified websites
 def open_site(site):
     speak(f"Opening {site}...")
     if site == "youtube":
@@ -127,9 +144,11 @@ def open_site(site):
     elif site == "gmail":
         webbrowser.open("https://mail.google.com")
     else:
-        speak("Sorry, I can only open YouTube, Google, GitHub, StackOverflow, and Gmail at the moment.")
+        speak(
+            "Sorry, I can only open YouTube, Google, GitHub, StackOverflow, and Gmail at the moment."
+        )
 
-#? Function to open specified applications
+# ? Function to open specified applications
 def open_app(app):
     speak(f"Opening {app}...")
     if app == "notepad":
@@ -151,10 +170,13 @@ def open_app(app):
             os.system("start spotify")
         except Exception as e:
             speak("Sorry, the Spotify app not present.")
+            print("Open app error:", e)
     else:
-        speak("Sorry, I can only open Notepad, Calculator, Chrome, and Spotify at the moment.")
+        speak(
+            "Sorry, I can only open Notepad, Calculator, Chrome, and Spotify at the moment."
+        )
 
-#? Function to search Wikipedia and return a summary of the topic
+# ? Function to search Wikipedia and return a summary of the topic
 def search_wikipedia(query):
     speak(f"Searching Wikipedia for {query}...")
     try:
@@ -171,7 +193,7 @@ def search_wikipedia(query):
         print("Sorry, I couldn't find any information on this topic.", e)
     # pass
 
-#? Function to get the current weather for a specified city using OpenWeatherMap API
+# ? Function to get the current weather for a specified city using OpenWeatherMap API
 def get_weather():
     api_key = os.getenv("WEATHER_API_KEY")
     if not api_key:
@@ -182,18 +204,30 @@ def get_weather():
     if not city_name:
         speak("I didn't catch the city name. Please try again.")
         return None
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={api_key}"
+    safe_city = quote_plus(city_name.strip())
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={safe_city}&appid={api_key}"
     try:
         response = requests.get(url, timeout=5).json()
-        weather_description = response['weather'][0]['description']
-        temperature = response['main']['temp']
+        weather = response.get("weather")
+        main_data = response.get("main")
+        if not weather or not main_data:
+            speak("Sorry, I couldn't fetch weather details for that city.")
+            return None
+
+        weather_description = weather[0]["description"]
+        temperature = main_data["temp"]
         temperature = temperature - 273.15  # Convert from Kelvin to Celsius
         temperature = round(temperature, 2)
-        speak(f"The temperature in {city_name} is {temperature} degrees Celsius. And the weather is {weather_description}.")
-    except requests.exceptions.RequestException:
-        speak("Sorry, I couldn't fetch the weather. Please check your internet connection.")
+        speak(
+            f"The temperature in {city_name} is {temperature} degrees Celsius. And the weather is {weather_description}."
+        )
+    except (requests.exceptions.RequestException, KeyError, TypeError, ValueError) as e:
+        print("Error fetching weather data:", e)
+        speak(
+            "Sorry, I couldn't fetch the weather. Please check your internet connection."
+        )
 
-#? Function to send an email using SMTP protocol
+# ? Function to send an email using SMTP protocol
 def send_email(to, subject, body):
     sender_email = os.getenv("EMAIL_ADDRESS")
     sender_password = os.getenv("EMAIL_PASSWORD")
@@ -205,7 +239,7 @@ def send_email(to, subject, body):
     # sender_email = listen_command()
 
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server = smtplib.SMTP("smtp.gmail.com", 587)
         server.starttls()
         server.login(sender_email, sender_password)
         email_message = f"Subject: {subject}\n\n{body}"
@@ -217,9 +251,12 @@ def send_email(to, subject, body):
         print(f"Error: {e}")
 
 # Main program
-if __name__ == "__main__":
+def main():
     wish_user()
     while True:
         command = listen_command()
         if command:
             process_command(command)
+
+if __name__ == "__main__":
+    main()
