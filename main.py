@@ -117,6 +117,31 @@ def open_site(site):
     else:
         speak("Sorry, I can only open YouTube, Google, GitHub, StackOverflow, and Gmail at the moment.")
 
+#? Function to open specified applications
+def open_app(app):
+    speak(f"Opening {app}...")
+    if app == "notepad":
+        os.system("notepad.exe")
+    elif app == "calculator":
+        os.system("calc.exe")
+    elif app == "chrome":
+        os.system("start chrome")
+    elif app == "explorer":
+        os.system("explorer.exe")
+    elif app == "excel":
+        os.system("start excel")
+    elif app == "word":
+        os.system("start winword")
+    elif app == "powerpoint":
+        os.system("start powerpnt")
+    elif app == "spotify":
+        try:
+            os.system("start spotify")
+        except Exception as e:
+            speak("Sorry, the Spotify app not present.")
+    else:
+        speak("Sorry, I can only open Notepad, Calculator, Chrome, and Spotify at the moment.")
+
 #? Function to search Wikipedia and return a summary of the topic
 def search_wikipedia(query):
     speak(f"Searching Wikipedia for {query}...")
