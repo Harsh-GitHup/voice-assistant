@@ -1,11 +1,16 @@
-import os
+# BuiltIn Imports
 import datetime
-import requests
-import wikipedia
+import os
+import smtplib
 import webbrowser
+
+# Third-Party Imports
 import pyttsx3
+import requests
 import speech_recognition as sr
+import wikipedia
 from dotenv import load_dotenv
+
 load_dotenv()
 
 # Initialize text-to-speech engine
@@ -16,18 +21,19 @@ voices = engine.getProperty('voices')
 engine.setProperty('voice', voices[0].id)
 
 
-# Function to convert text to speech
+#? Function to convert text to speech
 def speak(text):
+    print("Assistant:", text)
     engine.say(text)
     engine.runAndWait()
 
-# Function to greet the user based on the current time of day
+#? Function to greet the user based on the current time of day
 def wish_user():
     hour = datetime.datetime.now().hour
     greeting = "Good morning!" if 5 <= hour < 12 else "Good afternoon!" if 12 <= hour < 18 else "Good evening!"
     speak(f"{greeting} How can I assist you?")
 
-# Function to listen for user commands and return the recognized text
+#? Function to listen for user commands and return the recognized text
 def listen_command():
     # Initialize the speech recognition engine
     r = sr.Recognizer()
@@ -49,7 +55,7 @@ def listen_command():
         print("Sorry, there was an issue with the speech recognition service.", e)
         return None
 
-# Function to process the user's command and execute corresponding actions
+#? Function to process the user's command and execute corresponding actions
 def process_command(command):
     command = command.lower()
 
@@ -89,13 +95,13 @@ def process_command(command):
     else:
         speak("Sorry, I didn't catch that. Can you please repeat?")
 
-# Function to search the web using the default browser
+#? Function to search the web using the default browser
 def search_web(query):
     speak(f"Searching for {query} on the web...")
     url = "https://www.google.com/search?q=" + query
     webbrowser.open(url)
 
-# Function to open a specified websites
+#? Function to open a specified websites
 def open_site(site):
     speak(f"Opening {site}...")
     if site == "youtube":
@@ -111,7 +117,7 @@ def open_site(site):
     else:
         speak("Sorry, I can only open YouTube, Google, GitHub, StackOverflow, and Gmail at the moment.")
 
-# Function to search Wikipedia and return a summary of the topic
+#? Function to search Wikipedia and return a summary of the topic
 def search_wikipedia(query):
     speak(f"Searching Wikipedia for {query}...")
     try:
@@ -128,7 +134,7 @@ def search_wikipedia(query):
         print("Sorry, I couldn't find any information on this topic.", e)
     # pass
 
-# Function to get the current weather for a specified city using OpenWeatherMap API
+#? Function to get the current weather for a specified city using OpenWeatherMap API
 def get_weather():
     api_key = os.getenv("WEATHER_API_KEY")
     if not api_key:
