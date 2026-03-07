@@ -83,7 +83,9 @@ def assistant_response_contains(scenario_ctx: dict[str, Any], expected: str) -> 
 def weather_api_called(scenario_ctx: dict[str, Any]) -> None:
     assert scenario_ctx["request_called"] is True
     assert "openweathermap.org" in str(scenario_ctx["request_url"])
-    assert f"q={scenario_ctx['city']}" in str(scenario_ctx["request_url"])
+    # URL-encoded city (spaces become +)
+    encoded_city = scenario_ctx['city'].replace(" ", "+")
+    assert f"q={encoded_city}" in str(scenario_ctx["request_url"])
 
 
 @then("speak the temperature to the user")
