@@ -61,6 +61,8 @@ def process_command(command):
     elif "date" in command:
         current_date = datetime.datetime.now().strftime("%d-%m-%Y")
         speak(f"The current date is {current_date}")
+    elif "weather" in command:
+        get_weather()
     elif 'open' in command:
         if 'youtube' in command:
             webbrowser.open("youtube.com")
@@ -108,6 +110,28 @@ def search_wikipedia(query):
         speak("Sorry, I couldn't find any information on this topic.")
         print("Sorry, I couldn't find any information on this topic.", e)
     # pass
+
+# Function to get the current weather for a specified city using OpenWeatherMap API
+def get_weather():
+    api_key = os.getenv("WEATHER_API_KEY")
+    if not api_key:
+        speak("Weather API key is missing in environment variables.")
+        return None
+    speak("Which city's weather would you like to know?")
+    city_name = listen_command()
+    if not city_name:
+        speak("I didn't catch the city name. Please try again.")
+        return None
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={api_key}"
+    try:
+        response = requests.get(url, timeout=5).json()
+        weather_description = response['weather'][0]['description']
+        temperature = response['main']['temp']
+        temperature = temperature - 273.15  # Convert from Kelvin to Celsius
+        temperature = round(temperature, 2)
+        speak(f"The temperature in {city_name} is {temperature} degrees Celsius. And the weather is {weather_description}.")
+    except requests.exceptions.RequestException:
+        speak("Sorry, I couldn't fetch the weather. Please check your internet connection.")
 
 # Main program
 if __name__ == "__main__":
