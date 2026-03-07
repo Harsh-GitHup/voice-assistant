@@ -69,6 +69,18 @@ def process_command(command):
         speak(f"The current date is {current_date}")
     elif "weather" in command:
         get_weather()
+    elif "send" in command:
+        if "email" in command:
+            speak("Who should I send the email to? Please provide the recipient's email address.")
+            to = listen_command()
+            speak("What is the subject?")
+            subject = listen_command()
+            speak("What is the body of the email?")
+            body = listen_command()
+            if to and subject and body:
+                send_email(to, subject, body)
+        else:
+            speak("Sorry, I can only send emails at the moment.")
     elif 'open' in command:
         if 'app' in command:
             app = command.split('app')[-1].strip()
@@ -180,6 +192,29 @@ def get_weather():
         speak(f"The temperature in {city_name} is {temperature} degrees Celsius. And the weather is {weather_description}.")
     except requests.exceptions.RequestException:
         speak("Sorry, I couldn't fetch the weather. Please check your internet connection.")
+
+#? Function to send an email using SMTP protocol
+def send_email(to, subject, body):
+    sender_email = os.getenv("EMAIL_ADDRESS")
+    sender_password = os.getenv("EMAIL_PASSWORD")
+    if not sender_email or not sender_password:
+        speak("Email credentials are missing in environment variables.")
+        return None
+
+    # speak("Please provide your email address.")
+    # sender_email = listen_command()
+
+    try:
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(sender_email, sender_password)
+        email_message = f"Subject: {subject}\n\n{body}"
+        server.sendmail(sender_email, to, email_message)
+        server.close()
+        speak("Email has been sent successfully!")
+    except Exception as e:
+        speak("Sorry, I couldn't send the email. Please try again later.")
+        print(f"Error: {e}")
 
 # Main program
 if __name__ == "__main__":
