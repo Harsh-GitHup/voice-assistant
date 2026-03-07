@@ -61,6 +61,7 @@ setuptools>=75.0.0
 
 # Testing & Automation
 pytest>=9.0.2
+pytest-bdd>=8.1.0
 pytest-mock>=3.15.1
 pytest-cov>=7.0.0
 locust>=2.43.3

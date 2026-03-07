@@ -55,3 +55,5 @@ profiles/
 Dockerfile-2
 app-2.py
 main.data
+Docs/
+git-docs/
