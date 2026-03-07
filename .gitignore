@@ -53,4 +53,5 @@ temp_*
 current_frame.jpg
 profiles/
 Dockerfile-2
-app.py
+app-2.py
+main.data
