@@ -95,6 +95,21 @@ def search_web(query):
     url = "https://www.google.com/search?q=" + query
     webbrowser.open(url)
 
+# Function to open a specified websites
+def open_site(site):
+    speak(f"Opening {site}...")
+    if site == "youtube":
+        webbrowser.open("https://www.youtube.com")
+    elif site == "google":
+        webbrowser.open("https://www.google.com")
+    elif site == "github":
+        webbrowser.open("https://www.github.com")
+    elif site == "stackoverflow":
+        webbrowser.open("https://stackoverflow.com")
+    elif site == "gmail":
+        webbrowser.open("https://mail.google.com")
+    else:
+        speak("Sorry, I can only open YouTube, Google, GitHub, StackOverflow, and Gmail at the moment.")
 
 # Function to search Wikipedia and return a summary of the topic
 def search_wikipedia(query):
