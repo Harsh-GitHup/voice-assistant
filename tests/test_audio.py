@@ -2,7 +2,8 @@ import speech_recognition as sr
 
 
 def test_speech_recognition_accuracy(mocker):
-    """Verifies recognition flow without relying on external audio files/services."""
+    """Verifies recognition flow without
+    relying on external audio files/services."""
     r = sr.Recognizer()
     audio_path = "tests/samples/open_google.wav"
     fake_source = mocker.Mock()

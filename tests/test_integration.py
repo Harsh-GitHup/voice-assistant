@@ -20,5 +20,6 @@ def test_weather_integration(mock_get, _mock_getenv, mock_listen, mocker):
     assert "q=London" in args[0]
     assert "appid=dummy-api-key" in args[0]
     spy_speak.assert_any_call(
-        "The temperature in London is -258.15 degrees Celsius. And the weather is clear sky."
+        "The temperature in London is -258.15 degrees Celsius. "
+        "And the weather is clear sky."
     )
