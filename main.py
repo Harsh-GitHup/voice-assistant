@@ -64,12 +64,14 @@ def process_command(command):
     elif "weather" in command:
         get_weather()
     elif 'open' in command:
-        if 'youtube' in command:
-            webbrowser.open("youtube.com")
-        elif 'google' in command:
-            webbrowser.open("google.com") 
+        if 'app' in command:
+            app = command.split('app')[-1].strip()
+            open_app(app)
+        elif 'website' in command:
+            site = command.split('website')[-1].strip()
+            open_site(site)
         else:
-            speak("Sorry, I can only open YouTube and Google at the moment.")
+            speak("Sorry, I can only open websites at the moment.")
     elif "search" in command:
         if 'on wikipedia' in command:
             search_query = command.replace("wikipedia", "").strip()
@@ -77,7 +79,7 @@ def process_command(command):
         else:
             search_query = command.split("search")[-1].strip()
             search_web(search_query)
-    elif "exit" or "stop" in command:
+    elif "exit" in command or "stop" in command:
         hour = datetime.datetime.now().hour
         if 19 <= hour < 24 or 0 <= hour < 5:
             speak("Good night!")
