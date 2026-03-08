@@ -11,8 +11,7 @@ scenarios("features/weather.feature")
 
 
 def _extract_city(utterance: str) -> str:
-    match = re.search(r"\bin\s+([A-Za-z\s]+)$",
-                      utterance.strip(), flags=re.IGNORECASE)
+    match = re.search(r"\bin\s+([A-Za-z\s]+)$", utterance.strip(), flags=re.IGNORECASE)
     if not match:
         return ""
     return match.group(1).strip()
@@ -73,14 +72,9 @@ def user_says_weather_query(
 
 
 @then(parsers.parse('the assistant should respond with "{expected}"'))
-def assistant_response_contains(
-    scenario_ctx: dict[str, Any],
-    expected: str
-) -> None:
+def assistant_response_contains(scenario_ctx: dict[str, Any], expected: str) -> None:
     all_output = "\n".join(scenario_ctx["spoken"]).lower()
-    normalized_expected = expected.lower().replace(
-        "the weather is", "weather is"
-    )
+    normalized_expected = expected.lower().replace("the weather is", "weather is")
     assert normalized_expected in all_output
 
 

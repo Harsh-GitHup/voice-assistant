@@ -21,8 +21,7 @@ def test_performance_latency(monkeypatch):
     from main import wish_user
 
     # Avoid audio/TTS latency in performance test
-    monkeypatch.setattr("main.speak", lambda *_args,
-                        **_kwargs: None, raising=False)
+    monkeypatch.setattr("main.speak", lambda *_args, **_kwargs: None, raising=False)
 
     start = time.perf_counter()
     wish_user()
