@@ -22,10 +22,7 @@ def test_no_secrets_in_logs(monkeypatch, capsys, caplog):
 
     secret_key = "super-secret-weather-key"
     monkeypatch.setenv("WEATHER_API_KEY", secret_key)
-    monkeypatch.setattr(
-        main, "speak", lambda *_args,
-        **_kwargs: None, raising=False
-    )
+    monkeypatch.setattr(main, "speak", lambda *_args, **_kwargs: None, raising=False)
 
     with patch("main.requests.get", return_value=_mock_weather_response()):
         main.get_weather("London")
@@ -45,8 +42,7 @@ def test_input_sanitization(monkeypatch):
     import main
 
     monkeypatch.setenv("WEATHER_API_KEY", "expected-real-key")
-    monkeypatch.setattr(main, "speak", lambda *_args,
-                        **_kwargs: None, raising=False)
+    monkeypatch.setattr(main, "speak", lambda *_args, **_kwargs: None, raising=False)
 
     bad_input = "London&units=imperial&appid=HACKED"
     captured_request = {}

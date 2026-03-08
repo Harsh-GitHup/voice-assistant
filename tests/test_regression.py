@@ -20,6 +20,7 @@ def test_performance_response_time(mocker):
     (excluding network time).
     """
     import time
+
     import main
 
     # Exclude external TTS engine latency from pure logic timing.
