@@ -6,8 +6,8 @@ A Python 3.11 voice assistant with speech input/output, web utilities, weather l
 
 ## ✨ Features (CLI: `main.py`)
 
-- **Voice Interaction**:  
-  - Speech-to-Text via `speech_recognition` (Google recognizer)  
+- **Voice Interaction**:
+  - Speech-to-Text via `speech_recognition` (Google recognizer)
   - Text-to-Speech via `pyttsx3`
 - **Core Commands**:
   - Greetings (`hello`)
