@@ -14,19 +14,31 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Initialize text-to-speech engine
-engine = pyttsx3.init()
-# Set the default voice for text-to-speech synthesis
-voices = engine.getProperty("voices")
-# Change the index to use a different voice if needed
-engine.setProperty("voice", voices[0].id)
-
+# ? Helper function to create a new pyttsx3 engine instance
+def _build_tts_engine():
+    """Create and configure a pyttsx3 engine instance.
+    For each utterance to avoid SAPI deadlocks after
+    microphone usage."""
+    tts_engine = pyttsx3.init()
+    voices = tts_engine.getProperty("voices")
+    if voices:
+        tts_engine.setProperty("voice", voices[0].id)
+    return tts_engine
 
 # ? Function to convert text to speech
 def speak(text):
     print("Assistant:", text)
-    engine.say(text)
-    engine.runAndWait()
+    if not text:
+        return
+
+    try:
+        # Recreate engine per utterance to avoid SAPI deadlocks after microphone usage.
+        tts_engine = _build_tts_engine()
+        tts_engine.say(str(text))
+        tts_engine.runAndWait()
+        tts_engine.stop()
+    except Exception as e:
+        print("TTS engine error:", e)
 
 # ? Function to greet the user based on the current time of day
 def wish_user():
@@ -34,9 +46,7 @@ def wish_user():
     greeting = (
         "Good morning!"
         if 5 <= hour < 12
-        else "Good afternoon!"
-        if 12 <= hour < 18
-        else "Good evening!"
+        else "Good afternoon!" if 12 <= hour < 18 else "Good evening!"
     )
     speak(f"{greeting} How can I assist you?")
 
@@ -255,7 +265,9 @@ def get_weather_():
         speak("I didn't catch the city name. Please try again.")
         return None
     safe_city = quote_plus(city_name.strip())
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={safe_city}&appid={api_key}"
+    url = (
+        f"http://api.openweathermap.org/data/2.5/weather?q={safe_city}&appid={api_key}"
+    )
     try:
         response = requests.get(url, timeout=5).json()
         weather = response.get("weather")
