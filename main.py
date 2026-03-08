@@ -194,7 +194,57 @@ def search_wikipedia(query):
     # pass
 
 # ? Function to get the current weather for a specified city using OpenWeatherMap API
-def get_weather():
+def get_weather(city: str | None = None):
+    """Fetch weather for a city and speak a user-friendly response."""
+    api_key = os.getenv("WEATHER_API_KEY")
+    if not api_key or not api_key.strip():
+        speak("Weather API key is missing.")
+        return None
+
+    if city is None:
+        speak("Please tell me the city name.")
+        city = listen_command()
+
+    if not city or not city.strip():
+        speak("I could not get the city name.")
+        return None
+
+    city = city.strip()
+    encoded_city = quote_plus(city)
+    url = (
+        "https://api.openweathermap.org/data/2.5/weather"
+        f"?q={encoded_city}&appid={api_key}"
+    )
+
+    try:
+        response = requests.get(url, timeout=5)
+    except requests.RequestException:
+        speak("I could not fetch weather right now.")
+        return None
+
+    # Accept mocked responses where status_code may be a MagicMock.
+    status_code = getattr(response, "status_code", 200)
+    if isinstance(status_code, int) and status_code != 200:
+        speak("I could not fetch weather right now.")
+        return None
+
+    data = response.json() or {}
+    temp_k = data.get("main", {}).get("temp")
+    description = data.get("weather", [{}])[0].get("description", "unknown")
+    city_name = data.get("name") or city
+
+    if temp_k is None:
+        speak(f"The weather in {city_name} is {description}.")
+        return data
+
+    temp_c = float(temp_k) - 273.15
+    speak(
+        f"The temperature in {city_name} is {temp_c} degrees Celsius. "
+        f"And the weather is {description}."
+    )
+    return data
+
+def get_weather_():
     api_key = os.getenv("WEATHER_API_KEY")
     if not api_key:
         speak("Weather API key is missing in environment variables.")
