@@ -12,7 +12,7 @@ scenarios("features/weather.feature")
 
 def _extract_city(utterance: str) -> str:
     match = re.search(r"\bin\s+([A-Za-z\s]+)$",
-                    utterance.strip(), flags=re.IGNORECASE)
+                      utterance.strip(), flags=re.IGNORECASE)
     if not match:
         return ""
     return match.group(1).strip()
