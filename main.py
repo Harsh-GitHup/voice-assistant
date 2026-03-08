@@ -3,11 +3,13 @@ import datetime
 import os
 import smtplib
 import ssl
+import time
 import webbrowser
 from email.message import EmailMessage
 from urllib.parse import quote_plus
 
 # Third-Party Imports
+import pyautogui  # type: ignore
 import pyttsx3
 import pywhatkit  # type: ignore
 import requests
@@ -256,6 +258,12 @@ def send_whatsapp():
         pywhatkit.sendwhatmsg_instantly(f"+{number}", message)
         speak("Message sent.")
 
+# ? Function to take a screenshot and save it as a file
+def take_screenshot():
+    screenshot = pyautogui.screenshot()
+    screenshot.save(f"screenshot{time.time()}.png")
+    speak("Screenshot saved.")
+
 # ? Function to process the user's command and execute corresponding actions
 def process_command(command):
     command = command.lower()
@@ -272,6 +280,8 @@ def process_command(command):
         get_weather()
     elif "play" in command:
         play_music(command)
+    elif "screenshot" in command:
+        take_screenshot()
     elif "send" in command:
         if "email" in command:
             send_email()
