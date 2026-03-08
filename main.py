@@ -264,6 +264,16 @@ def take_screenshot():
     screenshot.save(f"screenshot{time.time()}.png")
     speak("Screenshot saved.")
 
+# ? Function to calculate a mathematical expression using eval
+def calculate(expression):
+    try:
+        # Use a restricted namespace with only safe math operations
+        safe_dict = {"__builtins__": {}}
+        result = eval(expression, safe_dict)
+        speak(f"The result is {result}")
+    except Exception:
+        speak("Invalid calculation.")
+
 # ? Function to process the user's command and execute corresponding actions
 def process_command(command):
     command = command.lower()
@@ -282,6 +292,9 @@ def process_command(command):
         play_music(command)
     elif "screenshot" in command:
         take_screenshot()
+    elif "calculate" in command:
+        expression = command.replace("calculate", "")
+        calculate(expression)
     elif "send" in command:
         if "email" in command:
             send_email()
