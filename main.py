@@ -2,7 +2,9 @@
 import datetime
 import os
 import smtplib
+import ssl
 import webbrowser
+from email.message import EmailMessage
 from urllib.parse import quote_plus
 
 # Third-Party Imports
@@ -192,21 +194,37 @@ def send_email(to, subject, body):
     sender_password = os.getenv("EMAIL_PASSWORD")
     if not sender_email or not sender_password:
         speak("Email credentials are missing in environment variables.")
-        return None
+        return
 
-    # speak("Please provide your email address.")
-    # sender_email = listen_command()
+    speak("Who should I send the email to?")
+    speak("Please provide the recipient's email address.")
+    to_email = listen_command()
+    if not to_email or "@" not in to_email:
+        speak("Invalid email address.")
+        return
+
+    speak("What is the subject?")
+    subject = listen_command()
+    speak("What is the body of the email?")
+    body = listen_command()
+    if not to_email and not subject and not body:
+        speak("I didn't catch the email details. Please try again.")        
+
+    msg = EmailMessage()
+    msg["From"] = sender_email
+    msg["To"] = to_email
+    msg["Subject"] = subject
+    msg.set_content(body)
+
+    context = ssl.create_default_context()
 
     try:
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(sender_email, sender_password)
-        email_message = f"Subject: {subject}\n\n{body}"
-        server.sendmail(sender_email, to, email_message)
-        server.close()
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
         speak("Email has been sent successfully!")
     except Exception as e:
-        speak("Sorry, I couldn't send the email. Please try again later.")
+        speak("Failed to send email.")
         print(f"Error: {e}")
 
 # ? Function to play music based on the user's command
@@ -245,16 +263,7 @@ def process_command(command):
         play_music(command)
     elif "send" in command:
         if "email" in command:
-            speak(
-                "Who should I send the email to? Please provide the recipient's email address."
-            )
-            to = listen_command()
-            speak("What is the subject?")
-            subject = listen_command()
-            speak("What is the body of the email?")
-            body = listen_command()
-            if to and subject and body:
-                send_email(to, subject, body)
+            send_email()
         else:
             speak("Sorry, I can only send emails at the moment.")
     elif "open" in command:
