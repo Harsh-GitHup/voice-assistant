@@ -245,6 +245,17 @@ def play_music(query):
         print("Sorry, I couldn't play the music.",e)
         speak("Sorry, I couldn't play the music. Please try again later.")
 
+# ? Function to send a WhatsApp message using pywhatkit
+def send_whatsapp():
+    speak("Enter phone number with country code.")
+    number = listen_command()
+    speak("What message?")
+    message = listen_command()
+
+    if number and message:
+        pywhatkit.sendwhatmsg_instantly(f"+{number}", message)
+        speak("Message sent.")
+
 # ? Function to process the user's command and execute corresponding actions
 def process_command(command):
     command = command.lower()
@@ -264,6 +275,8 @@ def process_command(command):
     elif "send" in command:
         if "email" in command:
             send_email()
+        elif "whatsapp" in command:
+            send_whatsapp()
         else:
             speak("Sorry, I can only send emails at the moment.")
     elif "open" in command:
