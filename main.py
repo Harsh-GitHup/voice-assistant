@@ -81,80 +81,6 @@ def listen_command():
         print("Sorry, there was an issue with the speech recognition service.", e)
         return None
 
-# ? Function to play music based on the user's command
-def play_music(query):
-    try:
-        if "spotify" in query:
-            speak("Opening Spotify...")
-            webbrowser.open("https://www.spotify.com/")
-        else:
-            speak("Which song?")
-            song = listen_command()
-            if song:
-                speak("Playing music...")
-                pywhatkit.playonyt(song)
-            else:
-                speak("Song not found.")
-    except Exception as e:
-        print("Sorry, I couldn't play the music.",e)
-        speak("Sorry, I couldn't play the music. Please try again later.")
-
-# ? Function to process the user's command and execute corresponding actions
-def process_command(command):
-    command = command.lower()
-
-    if "hello" in command:
-        speak("Hello there!")
-    elif "time" in command:
-        current_time = datetime.datetime.now().strftime("%H:%M:%S")
-        speak(f"The current time is {current_time}")
-    elif "date" in command:
-        current_date = datetime.datetime.now().strftime("%d-%m-%Y")
-        speak(f"The current date is {current_date}")
-    elif "weather" in command:
-        get_weather()
-    elif "play" in command:
-        play_music(command)
-    elif "send" in command:
-        if "email" in command:
-            speak(
-                "Who should I send the email to? Please provide the recipient's email address."
-            )
-            to = listen_command()
-            speak("What is the subject?")
-            subject = listen_command()
-            speak("What is the body of the email?")
-            body = listen_command()
-            if to and subject and body:
-                send_email(to, subject, body)
-        else:
-            speak("Sorry, I can only send emails at the moment.")
-    elif "open" in command:
-        if "app" in command:
-            app = command.split("app")[-1].strip()
-            open_app(app)
-        elif "website" in command:
-            site = command.split("website")[-1].strip()
-            open_site(site)
-        else:
-            speak("Sorry, I can only open websites at the moment.")
-    elif "search" in command:
-        if "on wikipedia" in command:
-            search_query = command.replace("wikipedia", "").strip()
-            search_wikipedia(search_query)
-        else:
-            search_query = command.split("search")[-1].strip()
-            search_web(search_query)
-    elif "exit" in command or "stop" in command:
-        hour = datetime.datetime.now().hour
-        if 19 <= hour < 24 or 0 <= hour < 5:
-            speak("Good night!")
-        else:
-            speak("Goodbye!")
-        exit()
-    else:
-        speak("Sorry, I didn't catch that. Can you please repeat?")
-
 # ? Function to search the web using the default browser
 def search_web(query):
     speak(f"Searching for {query} on the web...")
@@ -282,6 +208,80 @@ def send_email(to, subject, body):
     except Exception as e:
         speak("Sorry, I couldn't send the email. Please try again later.")
         print(f"Error: {e}")
+
+# ? Function to play music based on the user's command
+def play_music(query):
+    try:
+        if "spotify" in query:
+            speak("Opening Spotify...")
+            webbrowser.open("https://www.spotify.com/")
+        else:
+            speak("Which song?")
+            song = listen_command()
+            if song:
+                speak("Playing music...")
+                pywhatkit.playonyt(song)
+            else:
+                speak("Song not found.")
+    except Exception as e:
+        print("Sorry, I couldn't play the music.",e)
+        speak("Sorry, I couldn't play the music. Please try again later.")
+
+# ? Function to process the user's command and execute corresponding actions
+def process_command(command):
+    command = command.lower()
+
+    if "hello" in command:
+        speak("Hello there!")
+    elif "time" in command:
+        current_time = datetime.datetime.now().strftime("%H:%M:%S")
+        speak(f"The current time is {current_time}")
+    elif "date" in command:
+        current_date = datetime.datetime.now().strftime("%d-%m-%Y")
+        speak(f"The current date is {current_date}")
+    elif "weather" in command:
+        get_weather()
+    elif "play" in command:
+        play_music(command)
+    elif "send" in command:
+        if "email" in command:
+            speak(
+                "Who should I send the email to? Please provide the recipient's email address."
+            )
+            to = listen_command()
+            speak("What is the subject?")
+            subject = listen_command()
+            speak("What is the body of the email?")
+            body = listen_command()
+            if to and subject and body:
+                send_email(to, subject, body)
+        else:
+            speak("Sorry, I can only send emails at the moment.")
+    elif "open" in command:
+        if "app" in command:
+            app = command.split("app")[-1].strip()
+            open_app(app)
+        elif "website" in command:
+            site = command.split("website")[-1].strip()
+            open_site(site)
+        else:
+            speak("Sorry, I can only open websites at the moment.")
+    elif "search" in command:
+        if "on wikipedia" in command:
+            search_query = command.replace("wikipedia", "").strip()
+            search_wikipedia(search_query)
+        else:
+            search_query = command.split("search")[-1].strip()
+            search_web(search_query)
+    elif "exit" in command or "stop" in command:
+        hour = datetime.datetime.now().hour
+        if 19 <= hour < 24 or 0 <= hour < 5:
+            speak("Good night!")
+        else:
+            speak("Goodbye!")
+        exit()
+    else:
+        speak("Sorry, I didn't catch that. Can you please repeat?")
 
 # Main program
 def main():
