@@ -7,6 +7,7 @@ from urllib.parse import quote_plus
 
 # Third-Party Imports
 import pyttsx3
+import pywhatkit  # type: ignore
 import requests
 import speech_recognition as sr
 import wikipedia
@@ -80,6 +81,24 @@ def listen_command():
         print("Sorry, there was an issue with the speech recognition service.", e)
         return None
 
+# ? Function to play music based on the user's command
+def play_music(query):
+    try:
+        if "spotify" in query:
+            speak("Opening Spotify...")
+            webbrowser.open("https://www.spotify.com/")
+        else:
+            speak("Which song?")
+            song = listen_command()
+            if song:
+                speak("Playing music...")
+                pywhatkit.playonyt(song)
+            else:
+                speak("Song not found.")
+    except Exception as e:
+        print("Sorry, I couldn't play the music.",e)
+        speak("Sorry, I couldn't play the music. Please try again later.")
+
 # ? Function to process the user's command and execute corresponding actions
 def process_command(command):
     command = command.lower()
@@ -94,6 +113,8 @@ def process_command(command):
         speak(f"The current date is {current_date}")
     elif "weather" in command:
         get_weather()
+    elif "play" in command:
+        play_music(command)
     elif "send" in command:
         if "email" in command:
             speak(
