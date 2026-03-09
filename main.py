@@ -9,9 +9,9 @@ from email.message import EmailMessage
 from urllib.parse import quote_plus
 
 # Third-Party Imports
-import pyautogui  # type: ignore
+import pyautogui
 import pyttsx3
-import pywhatkit  # type: ignore
+import pywhatkit
 import requests
 import speech_recognition as sr
 import wikipedia
@@ -37,7 +37,7 @@ def speak(text):
         return
 
     try:
-        # Recreate engine per utterance to avoid SAPI deadlocks after microphone usage.
+        # * Recreate engine per utterance to avoid SAPI deadlocks after microphone usage.
         tts_engine = _build_tts_engine()
         tts_engine.say(str(text))
         tts_engine.runAndWait()
@@ -152,7 +152,6 @@ def search_wikipedia(query):
     except Exception as e:
         speak("Sorry, I couldn't find any information on this topic.")
         print("Sorry, I couldn't find any information on this topic.", e)
-    # pass
 
 # ? Function to get the current weather for a specified city using OpenWeatherMap API
 def get_weather(city: str | None = None):
