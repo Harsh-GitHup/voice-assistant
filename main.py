@@ -10,7 +10,6 @@ from urllib.parse import quote_plus
 
 # Third-Party Imports
 import pyttsx3
-import pywhatkit
 import requests
 import speech_recognition as sr
 import wikipedia
@@ -53,7 +52,9 @@ def wish_user():
     greeting = (
         "Good morning!"
         if 5 <= hour < 12
-        else "Good afternoon!" if 12 <= hour < 18 else "Good evening!"
+        else "Good afternoon!"
+        if 12 <= hour < 18
+        else "Good evening!"
     )
     speak(f"{greeting} How can I assist you?")
 
@@ -292,6 +293,9 @@ def send_email(to, subject, body):
 # ? Function to play music based on the user's command
 def play_music(query):
     try:
+        # Lazy import avoids importing GUI dependencies during test collection.
+        import pywhatkit
+
         if "spotify" in query:
             speak("Opening Spotify...")
             webbrowser.open("https://www.spotify.com/")
@@ -316,6 +320,9 @@ def send_whatsapp():
     message = listen_command()
 
     if number and message:
+        # Lazy import avoids importing GUI dependencies during test collection.
+        import pywhatkit
+
         pywhatkit.sendwhatmsg_instantly(f"+{number}", message)
         speak("Message sent.")
 
