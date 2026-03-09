@@ -8,10 +8,10 @@ def test_regression_engine_initialization():
     the optimized global engine.
     """
 
-    from main import engine
+    from main import _build_tts_engine
 
-    assert engine is not None
-    assert hasattr(engine, "say"), "Engine should be pre-initialized"
+    assert _build_tts_engine() is not None, "TTS engine should be initialized"
+    assert hasattr(_build_tts_engine(), "say"), "Engine should be pre-initialized"
 
 
 def test_performance_response_time(mocker):
