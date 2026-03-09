@@ -260,7 +260,7 @@ def send_email(to, subject, body):
     speak("What is the body of the email?")
     body = listen_command()
     if not to_email and not subject and not body:
-        speak("I didn't catch the email details. Please try again.")        
+        speak("I didn't catch the email details. Please try again.")
 
     msg = EmailMessage()
     msg["From"] = sender_email

@@ -1,0 +1,67 @@
+name: CI Tests
+
+permissions: read-all
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          # These are required for pyaudio and opencv in a Linux CI environment
+          sudo apt-get install -y --no-install-recommends portaudio19-dev libasound2-dev libgl1
+          sudo rm -rf /var/lib/apt/lists/*
+
+      - name: Install project dependencies
+        run: uv sync --dev
+
+      - name: Generate test audio samples
+        run: |
+          pwd
+          ls -la
+          if [ -f "generate_test_audio.py" ]; then
+            uv run python generate_test_audio.py
+          elif [ -f "src/generate_test_audio.py" ]; then
+            uv run python src/generate_test_audio.py
+          else
+            echo "generate_test_audio.py not found in repository root or src/"
+            exit 1
+          fi
+
+      - name: Run Pytest with Coverage
+        env:
+          WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
+        run: |
+          uv run pytest --cov=main --cov-report=xml tests/
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          token: ${{ secrets.CODECOV_TOKEN }}

@@ -44,6 +44,7 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+coverage*
 
 # Project specific
 temp/
@@ -58,3 +59,4 @@ app-2.py
 main.data
 Docs/
 git-docs/
+src/
