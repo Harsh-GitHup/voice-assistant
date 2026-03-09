@@ -35,7 +35,7 @@ jobs:
         run: |
           sudo apt-get update
           # These are required for pyaudio and opencv in a Linux CI environment
-          sudo apt-get install -y --no-install-recommends portaudio19-dev libasound2-dev libgl1-mesa-glx
+          sudo apt-get install -y --no-install-recommends portaudio19-dev libasound2-dev libgl1
           sudo rm -rf /var/lib/apt/lists/*
 
       - name: Install project dependencies
