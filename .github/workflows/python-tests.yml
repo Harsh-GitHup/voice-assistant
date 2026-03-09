@@ -57,6 +57,7 @@ jobs:
       - name: Run Pytest with Coverage
         env:
           WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
+          PYTHONPATH: ${{ github.workspace }}
         run: |
           uv run pytest --cov=main --cov-report=xml tests/
 
