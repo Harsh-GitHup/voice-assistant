@@ -101,4 +101,4 @@ For deterministic tests, mock network, microphone, and TTS dependencies.
 - Keep secrets in `.env` only.
 - On Linux CI, audio/vision system libraries may be required (`portaudio19-dev`, `libasound2-dev`, `libgl1-mesa-glx`).
 
-[⚖️ LICENSE (MIT)](LICENSE)
+⚖️ [LICENSE (MIT)](LICENSE)
