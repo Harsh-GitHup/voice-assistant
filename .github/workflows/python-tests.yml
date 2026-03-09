@@ -42,7 +42,17 @@ jobs:
         run: uv sync --dev
 
       - name: Generate test audio samples
-        run: uv run python generate_test_audio.py
+        run: |
+          pwd
+          ls -la
+          if [ -f "generate_test_audio.py" ]; then
+            uv run python generate_test_audio.py
+          elif [ -f "src/generate_test_audio.py" ]; then
+            uv run python src/generate_test_audio.py
+          else
+            echo "generate_test_audio.py not found in repository root or src/"
+            exit 1
+          fi
 
       - name: Run Pytest with Coverage
         env:
