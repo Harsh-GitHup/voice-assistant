@@ -20,7 +20,10 @@ def test_latency_threshold() -> None:
 
 def test_latency_threshold_() -> None:
     """listen_command should complete quickly when audio stack is mocked."""
-    with patch("main.sr.Recognizer") as mock_recognizer, patch("main.sr.Microphone") as mock_mic:
+    with (
+        patch("main.sr.Recognizer") as mock_recognizer,
+        patch("main.sr.Microphone") as mock_mic,
+    ):
         mock_instance = MagicMock()
         mock_recognizer.return_value = mock_instance
         mock_instance.listen.return_value = MagicMock()
@@ -34,4 +37,4 @@ def test_latency_threshold_() -> None:
         start = time.time()
         listen_command()
         duration = time.time() - start
-        assert duration < 2.0 # 2 seconds is a reasonable threshold for responsiveness
+        assert duration < 2.0  # 2 seconds is a reasonable threshold for responsiveness

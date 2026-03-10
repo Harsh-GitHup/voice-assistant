@@ -236,9 +236,11 @@ def test_send_email_success(assistant_module, monkeypatch):
     assert "Email has been sent successfully!" in spoken
 
 
-def test_process_command_exit_daytime_says_goodbye_and_exits(assistant_module, monkeypatch):
+def test_process_command_exit_daytime_says_goodbye_and_exits(
+    assistant_module, monkeypatch
+):
     import builtins
-    
+
     spoken = []
 
     class _FakeDateTime(real_datetime.datetime):
@@ -248,9 +250,7 @@ def test_process_command_exit_daytime_says_goodbye_and_exits(assistant_module, m
 
     monkeypatch.setattr(assistant_module, "speak", lambda text: spoken.append(text))
     monkeypatch.setattr(assistant_module.datetime, "datetime", _FakeDateTime)
-    monkeypatch.setattr(
-        builtins, "exit", lambda: (_ for _ in ()).throw(SystemExit)
-    )
+    monkeypatch.setattr(builtins, "exit", lambda: (_ for _ in ()).throw(SystemExit))
 
     with pytest.raises(SystemExit):
         assistant_module.process_command("exit")

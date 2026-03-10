@@ -40,7 +40,12 @@ def test_play_music_spotify_falls_back_to_youtube(monkeypatch):
 
     monkeypatch.setattr(main, "listen_command", lambda: "Believer")
     monkeypatch.setattr(main, "speak", lambda _text: None)
-    monkeypatch.setattr(main.os, "startfile", lambda _uri: (_ for _ in ()).throw(OSError("no app")), raising=False)
+    monkeypatch.setattr(
+        main.os,
+        "startfile",
+        lambda _uri: (_ for _ in ()).throw(OSError("no app")),
+        raising=False,
+    )
 
     called = {"youtube": False}
 
@@ -52,4 +57,3 @@ def test_play_music_spotify_falls_back_to_youtube(monkeypatch):
 
     main.play_music("play on spotify")
     assert called["youtube"] is True
-

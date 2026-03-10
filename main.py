@@ -19,6 +19,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 # ? Helper function to create a new pyttsx3 engine instance
 def _build_tts_engine():
     """Create and configure a pyttsx3 engine instance.
@@ -29,6 +30,7 @@ def _build_tts_engine():
     if voices:
         tts_engine.setProperty("voice", voices[0].id)
     return tts_engine
+
 
 # ? Function to convert text to speech
 def speak(text):
@@ -45,6 +47,7 @@ def speak(text):
     except Exception as e:
         print("TTS engine error:", e)
 
+
 # ? Function to greet the user based on the current time of day
 def wish_user():
     hour = datetime.datetime.now().hour
@@ -54,6 +57,7 @@ def wish_user():
         else "Good afternoon!" if 12 <= hour < 18 else "Good evening!"
     )
     speak(f"{greeting} How can I assist you?")
+
 
 # ? Function to listen for user commands and return the recognized text
 def listen_command():
@@ -85,11 +89,13 @@ def listen_command():
         print("Sorry, there was an issue with the speech recognition service.", e)
         return None
 
+
 # ? Function to search the web using the default browser
 def search_web(query):
     speak(f"Searching for {query} on the web...")
     url = "https://www.google.com/search?q=" + query
     webbrowser.open(url)
+
 
 # ? Function to open a specified websites
 def open_site(site):
@@ -108,6 +114,7 @@ def open_site(site):
         speak(
             "Sorry, I can only open YouTube, Google, GitHub, StackOverflow, and Gmail at the moment."
         )
+
 
 # ? Function to open specified applications
 def open_app(app):
@@ -137,6 +144,7 @@ def open_app(app):
             "Sorry, I can only open Notepad, Calculator, Chrome, and Spotify at the moment."
         )
 
+
 # ? Function to search Wikipedia and return a summary of the topic
 def search_wikipedia(query):
     speak(f"Searching Wikipedia for {query}...")
@@ -152,6 +160,7 @@ def search_wikipedia(query):
     except Exception as e:
         speak("Sorry, I couldn't find any information on this topic.")
         print("Sorry, I couldn't find any information on this topic.", e)
+
 
 # ? Function to get the current weather for a specified city using OpenWeatherMap API
 def get_weather(city: str | None = None):
@@ -204,6 +213,7 @@ def get_weather(city: str | None = None):
     )
     return data
 
+
 def get_weather_():
     api_key = os.getenv("WEATHER_API_KEY")
     if not api_key:
@@ -238,6 +248,7 @@ def get_weather_():
         speak(
             "Sorry, I couldn't fetch the weather. Please check your internet connection."
         )
+
 
 # ? Function to send an email using SMTP protocol
 def send_email():
@@ -277,6 +288,7 @@ def send_email():
     except Exception as e:
         speak("Failed to send email.")
         print(f"Error: {e}")
+
 
 # ? Function to play music based on the user's command
 def play_music(query):
@@ -326,6 +338,7 @@ def play_music(query):
         print("Sorry, I couldn't play the song.", e)
         speak("Sorry, I couldn't play the song. Please try again later.")
 
+
 # ? Function to send a WhatsApp message using pywhatkit
 def send_whatsapp():
     speak("Enter phone number with country code.")
@@ -337,11 +350,13 @@ def send_whatsapp():
         pywhatkit.sendwhatmsg_instantly(f"+{number}", message)
         speak("Message sent.")
 
+
 # ? Function to take a screenshot and save it as a file
 def take_screenshot():
     screenshot = pyautogui.screenshot()
     screenshot.save(f"screenshot{time.time()}.png")
     speak("Screenshot saved.")
+
 
 # ? Function to calculate a mathematical expression using eval
 def calculate(expression):
@@ -352,6 +367,7 @@ def calculate(expression):
         speak(f"The result is {result}")
     except Exception:
         speak("Invalid calculation.")
+
 
 # ? Function to process the user's command and execute corresponding actions
 def process_command(command):
@@ -407,6 +423,7 @@ def process_command(command):
     else:
         speak("Sorry, I didn't catch that. Can you please repeat?")
 
+
 # Main program
 def main():
     wish_user()
@@ -414,6 +431,7 @@ def main():
         command = listen_command()
         if command:
             process_command(command)
+
 
 if __name__ == "__main__":
     main()
