@@ -32,6 +32,31 @@ def _build_tts_engine():
     return tts_engine
 
 
+def _extract_song_from_query(query):
+    """Extract song title from inline play commands when provided."""
+    if not query:
+        return None
+
+    normalized = " ".join(str(query).strip().split())
+    lower_query = normalized.lower()
+
+    if not lower_query.startswith("play"):
+        return None
+
+    song_part = normalized[4:].strip()
+
+    if song_part.lower().startswith("music"):
+        song_part = song_part[5:].strip()
+
+    spotify_suffixes = (" on spotify", " in spotify", " from spotify", " spotify")
+    for suffix in spotify_suffixes:
+        if song_part.lower().endswith(suffix):
+            song_part = song_part[: -len(suffix)].strip()
+            break
+
+    return song_part or None
+
+
 # ? Function to convert text to speech
 def speak(text):
     print("Assistant:", text)
@@ -295,6 +320,59 @@ def play_music(query):
     try:
         speak("Which song?")
         music = listen_command()
+        if not music:
+            speak("Please specify a song name.")
+            return
+
+        if "spotify" in query:
+            # Try opening Spotify app directly via URI scheme (best effort).
+            try:
+                spotify_uri = f"spotify:search:{quote_plus(music)}"
+                if hasattr(os, "startfile"):
+                    os.startfile(spotify_uri)  # Windows
+                    speak(f"Opened Spotify for {music}.")
+                    return
+                # Non-Windows fallback: attempt via browser URI handler
+                if webbrowser.open(spotify_uri):
+                    speak(f"Opened Spotify for {music}.")
+                    return
+            except Exception as e:
+                print("Spotify launch error:", e)
+
+            # If Spotify app launch/playback is not available, play on YouTube.
+            speak("Couldn't start playback in Spotify. Playing on YouTube instead.")
+            try:
+                pywhatkit.playonyt(music)
+            except requests.exceptions.ConnectionError:
+                speak("Sorry, I couldn't connect to YouTube.")
+                speak("Please check your internet connection.")
+            except Exception as e:
+                speak("Couldn't play the song. Please try again later.")
+                print("Error playing song:", e)
+        else:
+            speak("Playing song...")
+            try:
+                pywhatkit.playonyt(music)
+            except requests.exceptions.ConnectionError:
+                speak("Sorry, I couldn't connect to YouTube.")
+                speak("Please check your internet connection.")
+            except Exception as e:
+                speak("Couldn't play the song. Please try again later.")
+                print("Error playing song:", e)
+    except Exception as e:
+        print("Sorry, I couldn't play the song.", e)
+        speak("Sorry, I couldn't play the song. Please try again later.")
+
+
+# ? Function to play music based on the user's command
+def play_music_(query):
+    try:
+        music = _extract_song_from_query(query)
+
+        if not music:
+            speak("Which song?")
+            music = listen_command()
+
         if not music:
             speak("Please specify a song name.")
             return

@@ -51,6 +51,6 @@ def test_play_music_parses_inline_song_for_spotify_(monkeypatch):
 
     monkeypatch.setattr(main.os, "startfile", fake_startfile, raising=False)
 
-    main.play_music("play believer on spotify")
+    main.play_music_("play believer on spotify")
 
     assert called["uri"] == "spotify:search:believer"
