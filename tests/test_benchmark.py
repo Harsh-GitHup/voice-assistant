@@ -182,7 +182,6 @@ def test_get_weather_success(assistant_module, monkeypatch):
     assert any("temperature in Delhi is 27.0 degrees Celsius" in s for s in spoken)
 
 
-# TODO: Fix this test to not rely on the actual API key check in get_weather, or refactor get_weather to separate the API key retrieval from the API call logic.
 def test_get_weather_missing_api_key(assistant_module, monkeypatch):
     spoken = []
     monkeypatch.setattr(assistant_module, "speak", lambda text: spoken.append(text))
@@ -191,7 +190,7 @@ def test_get_weather_missing_api_key(assistant_module, monkeypatch):
     result = assistant_module.get_weather()
 
     assert result is None
-    assert "Weather API key is missing in environment variables." in spoken
+    assert "Weather API key is missing." in spoken
 
 
 # TODO: Refactor send_email to separate the email sending logic from the user interaction, so we can test the email sending logic without relying on the user input and environment variable checks.
@@ -237,10 +236,9 @@ def test_send_email_success(assistant_module, monkeypatch):
     assert "Email has been sent successfully!" in spoken
 
 
-# TODO: Refactor process_command to separate the command parsing logic from the actual command execution, so we can test the command parsing and response logic without relying on the actual exit call.
-def test_process_command_exit_daytime_says_goodbye_and_exits(
-    assistant_module, monkeypatch
-):
+def test_process_command_exit_daytime_says_goodbye_and_exits(assistant_module, monkeypatch):
+    import builtins
+    
     spoken = []
 
     class _FakeDateTime(real_datetime.datetime):
@@ -251,7 +249,7 @@ def test_process_command_exit_daytime_says_goodbye_and_exits(
     monkeypatch.setattr(assistant_module, "speak", lambda text: spoken.append(text))
     monkeypatch.setattr(assistant_module.datetime, "datetime", _FakeDateTime)
     monkeypatch.setattr(
-        assistant_module, "exit", lambda: (_ for _ in ()).throw(SystemExit)
+        builtins, "exit", lambda: (_ for _ in ()).throw(SystemExit)
     )
 
     with pytest.raises(SystemExit):
