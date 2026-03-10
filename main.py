@@ -190,7 +190,7 @@ def get_weather():
         )
 
 # ? Function to send an email using SMTP protocol
-def send_email(to, subject, body):
+def send_email():
     sender_email = os.getenv("EMAIL_ADDRESS")
     sender_password = os.getenv("EMAIL_PASSWORD")
     if not sender_email or not sender_password:
@@ -232,19 +232,28 @@ def send_email(to, subject, body):
 def play_music(query):
     try:
         if "spotify" in query:
-            speak("Opening Spotify...")
-            webbrowser.open("https://www.spotify.com/")
+            speak("Which song?")
+            music = listen_command()
+            if not music:
+                speak("Please specify a song name.")
+                return
+            try:
+                os.system("start spotify")
+                speak(f"Opening Spotify to play {music}...")
+            except Exception:
+                speak("Spotify app not found. Opening Spotify in web player...")
+                webbrowser.open("https://www.spotify.com/search/" + quote_plus(music))
         else:
             speak("Which song?")
-            song = listen_command()
-            if song:
-                speak("Playing music...")
-                pywhatkit.playonyt(song)
+            music = listen_command()
+            if music:
+                speak("Playing song...")
+                pywhatkit.playonyt(music)
             else:
-                speak("Song not found.")
+                speak("Please specify a song name.")
     except Exception as e:
-        print("Sorry, I couldn't play the music.",e)
-        speak("Sorry, I couldn't play the music. Please try again later.")
+        print("Sorry, I couldn't play the song.", e)
+        speak("Sorry, I couldn't play the song. Please try again later.")
 
 # ? Function to send a WhatsApp message using pywhatkit
 def send_whatsapp():
@@ -287,7 +296,7 @@ def process_command(command):
         speak(f"The current date is {current_date}")
     elif "weather" in command:
         get_weather()
-    elif "play" in command:
+    elif "play" in command or "play music" in command:
         play_music(command)
     elif "screenshot" in command:
         take_screenshot()
