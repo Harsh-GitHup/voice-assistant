@@ -231,12 +231,13 @@ def send_email():
 # ? Function to play music based on the user's command
 def play_music(query):
     try:
+        speak("Which song?")
+        music = listen_command()
+        if not music:
+            speak("Please specify a song name.")
+            return
+
         if "spotify" in query:
-            speak("Which song?")
-            music = listen_command()
-            if not music:
-                speak("Please specify a song name.")
-                return
             try:
                 os.system("start spotify")
                 speak(f"Opening Spotify to play {music}...")
@@ -244,10 +245,8 @@ def play_music(query):
                 speak("Spotify app not found. Opening Spotify in web player...")
                 webbrowser.open("https://www.spotify.com/search/" + quote_plus(music))
         else:
-            speak("Which song?")
-            music = listen_command()
-            if music:
-                speak("Playing song...")
+            speak("Playing song...")
+            try:
                 pywhatkit.playonyt(music)
             except requests.exceptions.ConnectionError:
                 speak("Sorry, I couldn't connect to YouTube.")
