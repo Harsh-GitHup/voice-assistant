@@ -193,7 +193,6 @@ def test_get_weather_missing_api_key(assistant_module, monkeypatch):
     assert "Weather API key is missing." in spoken
 
 
-# TODO: Refactor send_email to separate the email sending logic from the user interaction, so we can test the email sending logic without relying on the user input and environment variable checks.
 def test_send_email_success(assistant_module, monkeypatch):
     spoken = []
     monkeypatch.setattr(assistant_module, "speak", lambda text: spoken.append(text))
@@ -204,35 +203,37 @@ def test_send_email_success(assistant_module, monkeypatch):
     }
     monkeypatch.setattr(assistant_module.os, "getenv", lambda key: env.get(key))
 
-    calls = {"starttls": 0, "login": None, "sendmail": None, "closed": 0}
+    answers = iter(["to@example.com", "Subject", "Body"])
+    monkeypatch.setattr(assistant_module, "listen_command", lambda: next(answers))
 
-    class _FakeSMTP:
-        def __init__(self, host, port):
+    calls = {"login": None, "send_message": None, "closed": 0}
+
+    class _FakeSMTPSSL:
+        def __init__(self, host, port, context=None):
             self.host = host
             self.port = port
+            self.context = context
 
-        def starttls(self):
-            calls["starttls"] += 1
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            calls["closed"] += 1
+            return False
 
         def login(self, email, pwd):
             calls["login"] = (email, pwd)
 
-        def sendmail(self, sender, to, msg):
-            calls["sendmail"] = (sender, to, msg)
+        def send_message(self, msg):
+            calls["send_message"] = msg
 
-        def close(self):
-            calls["closed"] += 1
+    monkeypatch.setattr(assistant_module.smtplib, "SMTP_SSL", _FakeSMTPSSL)
 
-    monkeypatch.setattr(assistant_module.smtplib, "SMTP", _FakeSMTP)
+    assistant_module.send_email()
 
-    assistant_module.send_email("to@example.com", "Subject", "Body")
-
-    assert calls["starttls"] == 1
     assert calls["login"] == ("sender@example.com", "password123")
-    assert calls["sendmail"][0] == "sender@example.com"
-    assert calls["sendmail"][1] == "to@example.com"
-    assert "Subject: Subject" in calls["sendmail"][2]
-    assert calls["closed"] == 1
+    assert calls["send_message"]["To"] == "to@example.com"
+    assert calls["send_message"]["Subject"] == "Subject"
     assert "Email has been sent successfully!" in spoken
 
 
