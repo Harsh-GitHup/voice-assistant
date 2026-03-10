@@ -249,8 +249,12 @@ def play_music(query):
             if music:
                 speak("Playing song...")
                 pywhatkit.playonyt(music)
-            else:
-                speak("Please specify a song name.")
+            except requests.exceptions.ConnectionError:
+                speak("Sorry, I couldn't connect to YouTube.")
+                speak("Please check your internet connection.")
+            except Exception as e:
+                speak("Couldn't play the song. Please try again later.")
+                print("Error playing song:", e)
     except Exception as e:
         print("Sorry, I couldn't play the song.", e)
         speak("Sorry, I couldn't play the song. Please try again later.")
