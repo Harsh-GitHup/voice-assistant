@@ -240,7 +240,7 @@ def get_weather_():
         )
 
 # ? Function to send an email using SMTP protocol
-def send_email(to, subject, body):
+def send_email():
     sender_email = os.getenv("EMAIL_ADDRESS")
     sender_password = os.getenv("EMAIL_PASSWORD")
     if not sender_email or not sender_password:
@@ -281,20 +281,50 @@ def send_email(to, subject, body):
 # ? Function to play music based on the user's command
 def play_music(query):
     try:
+        speak("Which song?")
+        music = listen_command()
+        if not music:
+            speak("Please specify a song name.")
+            return
+
         if "spotify" in query:
-            speak("Opening Spotify...")
-            webbrowser.open("https://www.spotify.com/")
+            # Try opening Spotify app directly via URI scheme (best effort).
+            try:
+                spotify_uri = f"spotify:search:{quote_plus(music)}"
+                if hasattr(os, "startfile"):
+                    os.startfile(spotify_uri)  # Windows
+                    speak(f"Opened Spotify for {music}.")
+                    return
+                # Non-Windows fallback: attempt via browser URI handler
+                if webbrowser.open(spotify_uri):
+                    speak(f"Opened Spotify for {music}.")
+                    return
+            except Exception as e:
+                print("Spotify launch error:", e)
+
+            # If Spotify app launch/playback is not available, play on YouTube.
+            speak("Couldn't start playback in Spotify. Playing on YouTube instead.")
+            try:
+                pywhatkit.playonyt(music)
+            except requests.exceptions.ConnectionError:
+                speak("Sorry, I couldn't connect to YouTube.")
+                speak("Please check your internet connection.")
+            except Exception as e:
+                speak("Couldn't play the song. Please try again later.")
+                print("Error playing song:", e)
         else:
-            speak("Which song?")
-            song = listen_command()
-            if song:
-                speak("Playing music...")
-                pywhatkit.playonyt(song)
-            else:
-                speak("Song not found.")
+            speak("Playing song...")
+            try:
+                pywhatkit.playonyt(music)
+            except requests.exceptions.ConnectionError:
+                speak("Sorry, I couldn't connect to YouTube.")
+                speak("Please check your internet connection.")
+            except Exception as e:
+                speak("Couldn't play the song. Please try again later.")
+                print("Error playing song:", e)
     except Exception as e:
-        print("Sorry, I couldn't play the music.",e)
-        speak("Sorry, I couldn't play the music. Please try again later.")
+        print("Sorry, I couldn't play the song.", e)
+        speak("Sorry, I couldn't play the song. Please try again later.")
 
 # ? Function to send a WhatsApp message using pywhatkit
 def send_whatsapp():
@@ -337,7 +367,7 @@ def process_command(command):
         speak(f"The current date is {current_date}")
     elif "weather" in command:
         get_weather()
-    elif "play" in command:
+    elif "play" in command or "play music" in command:
         play_music(command)
     elif "screenshot" in command:
         take_screenshot()
