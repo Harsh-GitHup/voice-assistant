@@ -238,12 +238,30 @@ def play_music(query):
             return
 
         if "spotify" in query:
+            # Try opening Spotify app directly via URI scheme (best effort).
             try:
-                os.system("start spotify")
-                speak(f"Opening Spotify to play {music}...")
-            except Exception:
-                speak("Spotify app not found. Opening Spotify in web player...")
-                webbrowser.open("https://www.spotify.com/search/" + quote_plus(music))
+                spotify_uri = f"spotify:search:{quote_plus(music)}"
+                if hasattr(os, "startfile"):
+                    os.startfile(spotify_uri)  # Windows
+                    speak(f"Opened Spotify for {music}.")
+                    return
+                # Non-Windows fallback: attempt via browser URI handler
+                if webbrowser.open(spotify_uri):
+                    speak(f"Opened Spotify for {music}.")
+                    return
+            except Exception as e:
+                print("Spotify launch error:", e)
+
+            # If Spotify app launch/playback is not available, play on YouTube.
+            speak("Couldn't start playback in Spotify. Playing on YouTube instead.")
+            try:
+                pywhatkit.playonyt(music)
+            except requests.exceptions.ConnectionError:
+                speak("Sorry, I couldn't connect to YouTube.")
+                speak("Please check your internet connection.")
+            except Exception as e:
+                speak("Couldn't play the song. Please try again later.")
+                print("Error playing song:", e)
         else:
             speak("Playing song...")
             try:
