@@ -5,11 +5,12 @@ from main import get_weather
 
 @patch("main.listen_command", return_value="London")
 @patch("main.os.getenv", return_value="dummy-api-key")
-@patch("requests.get")
-def test_weather_integration(mock_get, _mock_getenv, mock_listen, mocker):
+@patch("main.requests.get")
+def test_weather_integration(mock_get, _mock_getenv, _mock_listen, mocker):
     mock_get.return_value.json.return_value = {
         "main": {"temp": 15},
         "weather": [{"description": "clear sky"}],
+        "name": "London",
     }
     spy_speak = mocker.patch("main.speak")
 
