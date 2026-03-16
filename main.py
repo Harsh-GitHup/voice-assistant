@@ -29,39 +29,43 @@ def _build_tts_engine():
     voices = tts_engine.getProperty("voices")
     if voices:
         tts_engine.setProperty("voice", voices[0].id)
+    tts_engine.setProperty("rate", 180)
     return tts_engine
 
 
 # ? Helper function to extract song title from inline play commands
 def _extract_song_from_query(query):
-    """Extract song title from inline play commands when provided."""
+    """Extract song title from inline play commands (e.g., 'play despacito on spotify')."""
     if not query:
         return None
 
     normalized = " ".join(str(query).strip().split())
-    lower_query = normalized.lower()
-
-    if not lower_query.startswith("play"):
+    if not normalized.lower().startswith("play"):
         return None
 
+    # Remove 'play' (first 4 chars)
     song_part = normalized[4:].strip()
 
+    # Remove 'music' if user said 'play music [song]'
     if song_part.lower().startswith("music"):
         song_part = song_part[5:].strip()
 
+    # Clean suffixes
     spotify_suffixes = (" on spotify", " in spotify", " from spotify", " spotify")
     for suffix in spotify_suffixes:
         if song_part.lower().endswith(suffix):
             song_part = song_part[: -len(suffix)].strip()
             break
 
-    return song_part or None
+    return song_part if song_part else None
 
 
 # ? Function to play a song on YouTube with resilient error handling
 def _play_on_youtube(music):
-    """Play a song on YouTube with resilient error handling."""
+    """Play a song on YouTube with resilient error handling.
+    Fallback function to play a song on YouTube."""
     try:
+        speak(f"Playing {music} on YouTube.")
         pywhatkit.playonyt(music)
     except requests.exceptions.ConnectionError:
         speak("Sorry, I couldn't connect to YouTube.")
@@ -93,9 +97,7 @@ def wish_user():
     greeting = (
         "Good morning!"
         if 5 <= hour < 12
-        else "Good afternoon!"
-        if 12 <= hour < 18
-        else "Good evening!"
+        else "Good afternoon!" if 12 <= hour < 18 else "Good evening!"
     )
     speak(f"{greeting} How can I assist you?")
 
@@ -339,8 +341,11 @@ def send_email():
 # ? Function to play music based on the user's command
 def play_music(query):
     try:
-        speak("Which song?")
-        music = listen_command()
+        music = _extract_song_from_query(query)
+
+        if not music:
+            speak("Which song?")
+            music = listen_command()
         if not music:
             speak("Please specify a song name.")
             return
@@ -392,14 +397,10 @@ def play_music(query):
         speak("Sorry, I couldn't play the song. Please try again later.")
 
 
-# ? Function to play music based on the user's command
 def play_music_(query):
     try:
-        music = _extract_song_from_query(query)
-
-        if not music:
-            speak("Which song?")
-            music = listen_command()
+        speak("Which song?")
+        music = listen_command()
 
         if not music:
             speak("Please specify a song name.")
@@ -453,7 +454,7 @@ def play_music_(query):
 
 
 # ? Function to send a WhatsApp message using pywhatkit
-def send_whatsapp():
+def send_whatsapp_():
     speak("Enter phone number with country code.")
     number = listen_command()
     speak("What message?")
@@ -481,7 +482,6 @@ def take_screenshot():
         speak("Sorry, I couldn't take a screenshot on this device.")
 
 
-
 # ? Function to calculate a mathematical expression using eval
 def calculate(expression):
     try:
@@ -497,7 +497,7 @@ def calculate(expression):
 def process_command(command):
     command = command.lower()
 
-    if "hello" in command:
+    if any(word in command for word in ["hello", "hii", "hi", "hey"]):
         speak("Hello there!")
     elif "time" in command:
         current_time = datetime.datetime.now().strftime("%H:%M:%S")
