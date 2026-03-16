@@ -75,6 +75,16 @@ def _play_on_youtube(music):
         print("Error playing song:", e)
 
 
+# ? Helper function to convert temperature to Celsius
+def _to_celsius(temp, unit="K"):
+    """Helper to convert temperature to Celsius."""
+    if unit == "K":
+        return round(temp - 273.15, 2)
+    elif unit == "F":
+        return round((temp - 32) * 5 / 9, 2)
+    return temp
+
+
 # ? Function to convert text to speech
 def speak(text):
     print("Assistant:", text)
@@ -231,31 +241,37 @@ def get_weather(city: str | None = None):
 
     try:
         response = requests.get(url, timeout=5)
+        response.raise_for_status()  # ! Optional: raises an error for 4xx/5xx responses
     except requests.RequestException:
         speak("I could not fetch weather right now.")
         return None
 
-    # Accept mocked responses where status_code may be a MagicMock.
+    # $ Accept mocked responses where status_code may be a MagicMock.
     status_code = getattr(response, "status_code", 200)
     if isinstance(status_code, int) and status_code != 200:
         speak("I could not fetch weather right now.")
         return None
 
-    data = response.json() or {}
-    temp_k = data.get("main", {}).get("temp")
-    description = data.get("weather", [{}])[0].get("description", "unknown")
-    city_name = data.get("name") or city
+    try:
+        data = response.json() or {}
+        temp_k = data.get("main", {}).get("temp")
+        description = data.get("weather", [{}])[0].get("description", "unknown")
+        city_name = data.get("name") or city
 
-    if temp_k is None:
-        speak(f"The weather in {city_name} is {description}.")
+        if temp_k is not None:
+            temp_c = _to_celsius(float(temp_k), unit="K")
+            speak(
+                f"The temperature in {city_name} is {temp_c} degrees Celsius. "
+                f"And the weather is {description}."
+            )
+        else:
+            speak(
+                f"The weather in {city_name} is {description}, but I couldn't get the temperature."
+            )
         return data
-
-    temp_c = float(temp_k) - 273.15
-    speak(
-        f"The temperature in {city_name} is {temp_c} degrees Celsius. "
-        f"And the weather is {description}."
-    )
-    return data
+    except Exception:
+        speak("Weather service is currently unavailable.")
+        return None
 
 
 def get_weather_():
