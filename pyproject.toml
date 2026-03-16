@@ -54,4 +54,20 @@ dev = [
     "pytest-bdd>=8.1.0",
     "pytest-cov>=7.0.0",
     "pytest-mock>=3.15.1",
+    "mypy>=1.19.1",
+    "types-requests>=2.32.4.20260107",
 ]
+
+[tool.mypy]
+python_version = "3.11"
+
+[[tool.mypy.overrides]]
+module = [
+    "pyttsx3",
+    "speech_recognition",
+    "wikipedia",
+    "dotenv",
+    "pywhatkit",
+    "PIL",
+]
+ignore_missing_imports = true

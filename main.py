@@ -3,6 +3,7 @@ import datetime
 import os
 import smtplib
 import ssl
+import subprocess
 import time
 import webbrowser
 from email.message import EmailMessage
@@ -32,6 +33,7 @@ def _build_tts_engine():
     return tts_engine
 
 
+# ? Helper function to extract song title from inline play commands
 def _extract_song_from_query(query):
     """Extract song title from inline play commands when provided."""
     if not query:
@@ -55,6 +57,19 @@ def _extract_song_from_query(query):
             break
 
     return song_part or None
+
+
+# ? Function to play a song on YouTube with resilient error handling
+def _play_on_youtube(music):
+    """Play a song on YouTube with resilient error handling."""
+    try:
+        pywhatkit.playonyt(music)
+    except requests.exceptions.ConnectionError:
+        speak("Sorry, I couldn't connect to YouTube.")
+        speak("Please check your internet connection.")
+    except Exception as e:
+        speak("Couldn't play the song. Please try again later.")
+        print("Error playing song:", e)
 
 
 # ? Function to convert text to speech
@@ -118,7 +133,8 @@ def listen_command():
 # ? Function to search the web using the default browser
 def search_web(query):
     speak(f"Searching for {query} on the web...")
-    url = "https://www.google.com/search?q=" + query
+    safe_query = quote_plus(query.strip())
+    url = f"https://www.google.com/search?q={safe_query}"
     webbrowser.open(url)
 
 
@@ -286,7 +302,10 @@ def send_email():
     speak("Who should I send the email to?")
     speak("Please provide the recipient's email address.")
     to_email = listen_command()
-    if not to_email or "@" not in to_email:
+    if not to_email: 
+        speak("I didn't catch the recipient's email address. Please try again.")
+        return
+    if "@" not in to_email:
         speak("Invalid email address.")
         return
 
@@ -294,8 +313,9 @@ def send_email():
     subject = listen_command()
     speak("What is the body of the email?")
     body = listen_command()
-    if not to_email and not subject and not body:
-        speak("I didn't catch the email details. Please try again.")
+    if not subject or not body:
+        speak("I didn't catch the email subject or body. Please try again.")
+        return
 
     msg = EmailMessage()
     msg["From"] = sender_email
@@ -325,40 +345,47 @@ def play_music(query):
             return
 
         if "spotify" in query:
-            # Try opening Spotify app directly via URI scheme (best effort).
-            try:
-                spotify_uri = f"spotify:search:{quote_plus(music)}"
-                if hasattr(os, "startfile"):
-                    os.startfile(spotify_uri)  # Windows
-                    speak(f"Opened Spotify for {music}.")
-                    return
-                # Non-Windows fallback: attempt via browser URI handler
-                if webbrowser.open(spotify_uri):
-                    speak(f"Opened Spotify for {music}.")
-                    return
-            except Exception as e:
-                print("Spotify launch error:", e)
+            possible_paths = [
+                os.path.expandvars(r"%AppData%\Spotify\Spotify.exe"),
+                os.path.expandvars(r"%LocalAppData%\Microsoft\WindowsApps\Spotify.exe"),
+                r"C:\Program Files\Spotify\Spotify.exe",
+                r"C:\Program Files (x86)\Spotify\Spotify.exe",
+            ]
+            spotify_path = next(
+                (path for path in possible_paths if os.path.exists(path)), None
+            )
 
-            # If Spotify app launch/playback is not available, play on YouTube.
-            speak("Couldn't start playback in Spotify. Playing on YouTube instead.")
+            if spotify_path:
+                try:
+                    spotify_uri = f"spotify:search:{quote_plus(music)}"
+                    try:
+                        subprocess.Popen([spotify_path, spotify_uri])
+                    except Exception:
+                        subprocess.Popen([spotify_path])
+                    speak(f"Opened Spotify for {music}.")
+                    return
+                except Exception as e:
+                    print("Spotify launch error:", e)
+                    speak("Couldn't start playback in Spotify.")
+                    speak("Playing on YouTube instead.")
+                _play_on_youtube(music)
+            else:
+                speak("Spotify app not found.")
+
+            spotify_web_url = f"https://open.spotify.com/search/{quote_plus(music)}"
             try:
-                pywhatkit.playonyt(music)
-            except requests.exceptions.ConnectionError:
-                speak("Sorry, I couldn't connect to YouTube.")
-                speak("Please check your internet connection.")
+                webbrowser.open(spotify_web_url)
+                speak(f"Opened Spotify web player for {music}.")
+                return
             except Exception as e:
-                speak("Couldn't play the song. Please try again later.")
-                print("Error playing song:", e)
-        else:
-            speak("Playing song...")
-            try:
-                pywhatkit.playonyt(music)
-            except requests.exceptions.ConnectionError:
-                speak("Sorry, I couldn't connect to YouTube.")
-                speak("Please check your internet connection.")
-            except Exception as e:
-                speak("Couldn't play the song. Please try again later.")
-                print("Error playing song:", e)
+                print("Spotify web player error:", e)
+                speak("Playing on YouTube instead.")
+
+            _play_on_youtube(music)
+            return
+
+        speak("Playing song...")
+        _play_on_youtube(music)
     except Exception as e:
         print("Sorry, I couldn't play the song.", e)
         speak("Sorry, I couldn't play the song. Please try again later.")
@@ -378,40 +405,47 @@ def play_music_(query):
             return
 
         if "spotify" in query:
-            # Try opening Spotify app directly via URI scheme (best effort).
-            try:
-                spotify_uri = f"spotify:search:{quote_plus(music)}"
-                if hasattr(os, "startfile"):
-                    os.startfile(spotify_uri)  # Windows
-                    speak(f"Opened Spotify for {music}.")
-                    return
-                # Non-Windows fallback: attempt via browser URI handler
-                if webbrowser.open(spotify_uri):
-                    speak(f"Opened Spotify for {music}.")
-                    return
-            except Exception as e:
-                print("Spotify launch error:", e)
+            possible_paths = [
+                os.path.expandvars(r"%AppData%\Spotify\Spotify.exe"),
+                os.path.expandvars(r"%LocalAppData%\Microsoft\WindowsApps\Spotify.exe"),
+                r"C:\Program Files\Spotify\Spotify.exe",
+                r"C:\Program Files (x86)\Spotify\Spotify.exe",
+            ]
+            spotify_path = next(
+                (path for path in possible_paths if os.path.exists(path)), None
+            )
 
-            # If Spotify app launch/playback is not available, play on YouTube.
-            speak("Couldn't start playback in Spotify. Playing on YouTube instead.")
+            if spotify_path:
+                try:
+                    spotify_uri = f"spotify:search:{quote_plus(music)}"
+                    try:
+                        subprocess.Popen([spotify_path, spotify_uri])
+                    except Exception:
+                        subprocess.Popen([spotify_path])
+                    speak(f"Opened Spotify for {music}.")
+                    return
+                except Exception as e:
+                    print("Spotify launch error:", e)
+                    speak("Couldn't start playback in Spotify.")
+                    speak("Playing on YouTube instead.")
+                _play_on_youtube(music)
+            else:
+                speak("Spotify app not found.")
+
+            spotify_web_url = f"https://open.spotify.com/search/{quote_plus(music)}"
             try:
-                pywhatkit.playonyt(music)
-            except requests.exceptions.ConnectionError:
-                speak("Sorry, I couldn't connect to YouTube.")
-                speak("Please check your internet connection.")
+                webbrowser.open(spotify_web_url)
+                speak(f"Opened Spotify web player for {music}.")
+                return
             except Exception as e:
-                speak("Couldn't play the song. Please try again later.")
-                print("Error playing song:", e)
-        else:
-            speak("Playing song...")
-            try:
-                pywhatkit.playonyt(music)
-            except requests.exceptions.ConnectionError:
-                speak("Sorry, I couldn't connect to YouTube.")
-                speak("Please check your internet connection.")
-            except Exception as e:
-                speak("Couldn't play the song. Please try again later.")
-                print("Error playing song:", e)
+                print("Spotify web player error:", e)
+                speak("Playing on YouTube instead.")
+
+            _play_on_youtube(music)
+            return
+
+        speak("Playing song...")
+        _play_on_youtube(music)
     except Exception as e:
         print("Sorry, I couldn't play the song.", e)
         speak("Sorry, I couldn't play the song. Please try again later.")
@@ -485,13 +519,21 @@ def process_command(command):
         else:
             speak("Sorry, I can only open websites at the moment.")
     elif "search" in command:
-        if "on wikipedia" in command:
-            search_query = command.replace("wikipedia", "").strip()
-            search_wikipedia(search_query)
+        if "wikipedia" in command:
+            search_query = (
+                command.replace("search", "")
+                .replace("on wikipedia", "")
+                .replace("wikipedia", "")
+                .strip()
+            )
+            if search_query:
+                search_wikipedia(search_query)
+            else:
+                speak("Please tell me what to search on Wikipedia.")
         else:
             search_query = command.split("search")[-1].strip()
             search_web(search_query)
-    elif "exit" in command or "stop" in command:
+    elif any(word in command for word in ["exit", "stop", "quit", "bye"]):
         hour = datetime.datetime.now().hour
         if 19 <= hour < 24 or 0 <= hour < 5:
             speak("Good night!")
@@ -506,9 +548,15 @@ def process_command(command):
 def main():
     wish_user()
     while True:
-        command = listen_command()
-        if command:
-            process_command(command)
+        try:
+            command = listen_command()
+            if command:
+                process_command(command)
+            else:
+                time.sleep(0.5)
+        except KeyboardInterrupt:
+            speak("Stopping assistant. Goodbye.")
+            break
 
 
 if __name__ == "__main__":
