@@ -33,3 +33,27 @@ def test_performance_response_time(mocker):
 
     duration = time.perf_counter() - start
     assert duration < 0.2, f"Greeting logic is too slow: {duration}s"
+
+
+def test_play_music_spotify_falls_back_to_youtube(monkeypatch):
+    import main
+
+    monkeypatch.setattr(main, "listen_command", lambda: "Believer")
+    monkeypatch.setattr(main, "speak", lambda _text: None)
+    monkeypatch.setattr(
+        main.os,
+        "startfile",
+        lambda _uri: (_ for _ in ()).throw(OSError("no app")),
+        raising=False,
+    )
+
+    called = {"youtube": False}
+
+    def fake_playonyt(song):
+        called["youtube"] = True
+        assert song == "Believer"
+
+    monkeypatch.setattr(main.pywhatkit, "playonyt", fake_playonyt)
+
+    main.play_music("play on spotify")
+    assert called["youtube"] is True

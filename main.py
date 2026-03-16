@@ -31,6 +31,33 @@ def _build_tts_engine():
         tts_engine.setProperty("voice", voices[0].id)
     return tts_engine
 
+
+# ? Helper function to extract song title from inline play commands
+def _extract_song_from_query(query):
+    """Extract song title from inline play commands when provided."""
+    if not query:
+        return None
+
+    normalized = " ".join(str(query).strip().split())
+    lower_query = normalized.lower()
+
+    if not lower_query.startswith("play"):
+        return None
+
+    song_part = normalized[4:].strip()
+
+    if song_part.lower().startswith("music"):
+        song_part = song_part[5:].strip()
+
+    spotify_suffixes = (" on spotify", " in spotify", " from spotify", " spotify")
+    for suffix in spotify_suffixes:
+        if song_part.lower().endswith(suffix):
+            song_part = song_part[: -len(suffix)].strip()
+            break
+
+    return song_part or None
+
+
 # ? Function to play a song on YouTube with resilient error handling
 def _play_on_youtube(music):
     """Play a song on YouTube with resilient error handling."""
@@ -42,6 +69,7 @@ def _play_on_youtube(music):
     except Exception as e:
         speak("Couldn't play the song. Please try again later.")
         print("Error playing song:", e)
+
 
 # ? Function to convert text to speech
 def speak(text):
@@ -340,6 +368,8 @@ def play_music(query):
                 except Exception as e:
                     print("Spotify launch error:", e)
                     speak("Couldn't start playback in Spotify.")
+                    speak("Playing on YouTube instead.")
+                _play_on_youtube(music)
             else:
                 speak("Spotify app not found.")
 
@@ -360,6 +390,67 @@ def play_music(query):
     except Exception as e:
         print("Sorry, I couldn't play the song.", e)
         speak("Sorry, I couldn't play the song. Please try again later.")
+
+
+# ? Function to play music based on the user's command
+def play_music_(query):
+    try:
+        music = _extract_song_from_query(query)
+
+        if not music:
+            speak("Which song?")
+            music = listen_command()
+
+        if not music:
+            speak("Please specify a song name.")
+            return
+
+        if "spotify" in query:
+            possible_paths = [
+                os.path.expandvars(r"%AppData%\Spotify\Spotify.exe"),
+                os.path.expandvars(r"%LocalAppData%\Microsoft\WindowsApps\Spotify.exe"),
+                r"C:\Program Files\Spotify\Spotify.exe",
+                r"C:\Program Files (x86)\Spotify\Spotify.exe",
+            ]
+            spotify_path = next(
+                (path for path in possible_paths if os.path.exists(path)), None
+            )
+
+            if spotify_path:
+                try:
+                    spotify_uri = f"spotify:search:{quote_plus(music)}"
+                    try:
+                        subprocess.Popen([spotify_path, spotify_uri])
+                    except Exception:
+                        subprocess.Popen([spotify_path])
+                    speak(f"Opened Spotify for {music}.")
+                    return
+                except Exception as e:
+                    print("Spotify launch error:", e)
+                    speak("Couldn't start playback in Spotify.")
+                    speak("Playing on YouTube instead.")
+                _play_on_youtube(music)
+            else:
+                speak("Spotify app not found.")
+
+            spotify_web_url = f"https://open.spotify.com/search/{quote_plus(music)}"
+            try:
+                webbrowser.open(spotify_web_url)
+                speak(f"Opened Spotify web player for {music}.")
+                return
+            except Exception as e:
+                print("Spotify web player error:", e)
+                speak("Playing on YouTube instead.")
+
+            _play_on_youtube(music)
+            return
+
+        speak("Playing song...")
+        _play_on_youtube(music)
+    except Exception as e:
+        print("Sorry, I couldn't play the song.", e)
+        speak("Sorry, I couldn't play the song. Please try again later.")
+
 
 # ? Function to send a WhatsApp message using pywhatkit
 def send_whatsapp():
@@ -388,6 +479,7 @@ def take_screenshot():
     except Exception as e:
         print("Screenshot failed:", e)
         speak("Sorry, I couldn't take a screenshot on this device.")
+
 
 
 # ? Function to calculate a mathematical expression using eval
@@ -477,6 +569,7 @@ def main():
         except KeyboardInterrupt:
             speak("Stopping assistant. Goodbye.")
             break
+
 
 if __name__ == "__main__":
     main()
