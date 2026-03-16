@@ -303,7 +303,7 @@ def send_email():
     speak("Who should I send the email to?")
     speak("Please provide the recipient's email address.")
     to_email = listen_command()
-    if not to_email: 
+    if not to_email:
         speak("I didn't catch the recipient's email address. Please try again.")
         return
     if "@" not in to_email:

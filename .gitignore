@@ -52,11 +52,7 @@ temp/
 *.mp3
 temp_*
 .trunk/
-current_frame.jpg
-profiles/
-Dockerfile-2
-app-2.py
-main.data
+PyWhatKit_DB.txt
 Docs/
 git-docs/
 src/
