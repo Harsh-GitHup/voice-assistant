@@ -88,7 +88,8 @@ def listen_command():
 # ? Function to search the web using the default browser
 def search_web(query):
     speak(f"Searching for {query} on the web...")
-    url = "https://www.google.com/search?q=" + query
+    safe_query = quote_plus(query.strip())
+    url = f"https://www.google.com/search?q={safe_query}"
     webbrowser.open(url)
 
 # ? Function to open a specified websites
@@ -200,7 +201,10 @@ def send_email():
     speak("Who should I send the email to?")
     speak("Please provide the recipient's email address.")
     to_email = listen_command()
-    if not to_email or "@" not in to_email:
+    if not to_email: 
+        speak("I didn't catch the recipient's email address. Please try again.")
+        return
+    if "@" not in to_email:
         speak("Invalid email address.")
         return
 
@@ -208,8 +212,9 @@ def send_email():
     subject = listen_command()
     speak("What is the body of the email?")
     body = listen_command()
-    if not to_email and not subject and not body:
-        speak("I didn't catch the email details. Please try again.")
+    if not subject or not body:
+        speak("I didn't catch the email subject or body. Please try again.")
+        return
 
     msg = EmailMessage()
     msg["From"] = sender_email
@@ -341,13 +346,21 @@ def process_command(command):
         else:
             speak("Sorry, I can only open websites at the moment.")
     elif "search" in command:
-        if "on wikipedia" in command:
-            search_query = command.replace("wikipedia", "").strip()
-            search_wikipedia(search_query)
+        if "wikipedia" in command:
+            search_query = (
+                command.replace("search", "")
+                .replace("on wikipedia", "")
+                .replace("wikipedia", "")
+                .strip()
+            )
+            if search_query:
+                search_wikipedia(search_query)
+            else:
+                speak("Please tell me what to search on Wikipedia.")
         else:
             search_query = command.split("search")[-1].strip()
             search_web(search_query)
-    elif "exit" in command or "stop" in command:
+    elif any(word in command for word in ["exit", "stop", "quit", "bye"]):
         hour = datetime.datetime.now().hour
         if 19 <= hour < 24 or 0 <= hour < 5:
             speak("Good night!")
@@ -361,9 +374,15 @@ def process_command(command):
 def main():
     wish_user()
     while True:
-        command = listen_command()
-        if command:
-            process_command(command)
+        try:
+            command = listen_command()
+            if command:
+                process_command(command)
+            else:
+                time.sleep(0.5)
+        except KeyboardInterrupt:
+            speak("Stopping assistant. Goodbye.")
+            break
 
 if __name__ == "__main__":
     main()
