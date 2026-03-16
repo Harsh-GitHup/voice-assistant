@@ -3,6 +3,7 @@ import datetime
 import os
 import smtplib
 import ssl
+import subprocess
 import time
 import webbrowser
 from email.message import EmailMessage
@@ -29,6 +30,18 @@ def _build_tts_engine():
     if voices:
         tts_engine.setProperty("voice", voices[0].id)
     return tts_engine
+
+# ? Function to play a song on YouTube with resilient error handling
+def _play_on_youtube(music):
+    """Play a song on YouTube with resilient error handling."""
+    try:
+        pywhatkit.playonyt(music)
+    except requests.exceptions.ConnectionError:
+        speak("Sorry, I couldn't connect to YouTube.")
+        speak("Please check your internet connection.")
+    except Exception as e:
+        speak("Couldn't play the song. Please try again later.")
+        print("Error playing song:", e)
 
 # ? Function to convert text to speech
 def speak(text):
@@ -243,40 +256,45 @@ def play_music(query):
             return
 
         if "spotify" in query:
-            # Try opening Spotify app directly via URI scheme (best effort).
-            try:
-                spotify_uri = f"spotify:search:{quote_plus(music)}"
-                if hasattr(os, "startfile"):
-                    os.startfile(spotify_uri)  # Windows
-                    speak(f"Opened Spotify for {music}.")
-                    return
-                # Non-Windows fallback: attempt via browser URI handler
-                if webbrowser.open(spotify_uri):
-                    speak(f"Opened Spotify for {music}.")
-                    return
-            except Exception as e:
-                print("Spotify launch error:", e)
+            possible_paths = [
+                os.path.expandvars(r"%AppData%\Spotify\Spotify.exe"),
+                os.path.expandvars(r"%LocalAppData%\Microsoft\WindowsApps\Spotify.exe"),
+                r"C:\Program Files\Spotify\Spotify.exe",
+                r"C:\Program Files (x86)\Spotify\Spotify.exe",
+            ]
+            spotify_path = next(
+                (path for path in possible_paths if os.path.exists(path)), None
+            )
 
-            # If Spotify app launch/playback is not available, play on YouTube.
-            speak("Couldn't start playback in Spotify. Playing on YouTube instead.")
+            if spotify_path:
+                try:
+                    spotify_uri = f"spotify:search:{quote_plus(music)}"
+                    try:
+                        subprocess.Popen([spotify_path, spotify_uri])
+                    except Exception:
+                        subprocess.Popen([spotify_path])
+                    speak(f"Opened Spotify for {music}.")
+                    return
+                except Exception as e:
+                    print("Spotify launch error:", e)
+                    speak("Couldn't start playback in Spotify.")
+            else:
+                speak("Spotify app not found.")
+
+            spotify_web_url = f"https://open.spotify.com/search/{quote_plus(music)}"
             try:
-                pywhatkit.playonyt(music)
-            except requests.exceptions.ConnectionError:
-                speak("Sorry, I couldn't connect to YouTube.")
-                speak("Please check your internet connection.")
+                webbrowser.open(spotify_web_url)
+                speak(f"Opened Spotify web player for {music}.")
+                return
             except Exception as e:
-                speak("Couldn't play the song. Please try again later.")
-                print("Error playing song:", e)
-        else:
-            speak("Playing song...")
-            try:
-                pywhatkit.playonyt(music)
-            except requests.exceptions.ConnectionError:
-                speak("Sorry, I couldn't connect to YouTube.")
-                speak("Please check your internet connection.")
-            except Exception as e:
-                speak("Couldn't play the song. Please try again later.")
-                print("Error playing song:", e)
+                print("Spotify web player error:", e)
+                speak("Playing on YouTube instead.")
+
+            _play_on_youtube(music)
+            return
+
+        speak("Playing song...")
+        _play_on_youtube(music)
     except Exception as e:
         print("Sorry, I couldn't play the song.", e)
         speak("Sorry, I couldn't play the song. Please try again later.")
