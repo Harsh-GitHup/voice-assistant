@@ -11,7 +11,9 @@ def test_play_music_spotify_falls_back_to_web_when_app_missing(monkeypatch):
     monkeypatch.setattr(
         main.pywhatkit,
         "playonyt",
-        lambda _music: (_ for _ in ()).throw(AssertionError("YouTube should not be called")),
+        lambda _music: (_ for _ in ()).throw(
+            AssertionError("YouTube should not be called")
+        ),
     )
 
     main.play_music("play music on spotify")
@@ -30,7 +32,9 @@ def test_play_music_spotify_web_failure_falls_back_to_youtube(monkeypatch):
     monkeypatch.setattr(main.webbrowser, "open", raise_web_error)
 
     yt_calls = []
-    monkeypatch.setattr(main.pywhatkit, "playonyt", lambda music: yt_calls.append(music))
+    monkeypatch.setattr(
+        main.pywhatkit, "playonyt", lambda music: yt_calls.append(music)
+    )
 
     main.play_music("play music on spotify")
 
@@ -49,7 +53,9 @@ def test_send_email_does_not_send_when_subject_or_body_missing(monkeypatch):
 
     class FailIfCalledSMTP:
         def __init__(self, *args, **kwargs):
-            raise AssertionError("SMTP should not be called when details are incomplete")
+            raise AssertionError(
+                "SMTP should not be called when details are incomplete"
+            )
 
     monkeypatch.setattr(main.smtplib, "SMTP_SSL", FailIfCalledSMTP)
 
