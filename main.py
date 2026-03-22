@@ -377,19 +377,57 @@ def play_music(query):
         speak("Sorry, I couldn't play the song. Please try again later.")
 
 
-# ? Function to send a WhatsApp message using pywhatkit
-def send_whatsapp_():
+# ? Function to send a WhatsApp message via desktop app or web fallback
+def send_whatsapp():
+    """Send a WhatsApp message via desktop app or web fallback."""
     speak("Enter phone number with country code.")
     number = listen_command()
     speak("What message?")
     message = listen_command()
 
-    if number and message:
-        # Lazy import avoids importing GUI dependencies during test collection.
-        import pywhatkit
+    if not number or not message:
+        speak("I didn't catch the phone number or message. Please try again.")
+        return
 
-        pywhatkit.sendwhatmsg_instantly(f"+{number}", message)
-        speak("Message sent.")
+    # * Clean the number (ensure no '+' prefix as we add it in the URL)
+    clean_number = number.replace("+", "").strip()
+    encoded_msg = quote_plus(message)
+    # * This is more reliable for "Desktop First" than pywhatkit
+    desktop_url = f"whatsapp://send?phone={clean_number}&text={encoded_msg}"
+
+    try:
+        import pyautogui
+
+        # STEP 1: Try to trigger the Windows Desktop App via Protocol
+        speak("Attempting to open the WhatsApp desktop app.")
+        webbrowser.open(desktop_url)
+        time.sleep(8)  # Give the app time to open and load the contact
+        pyautogui.press("enter")  # Press Enter to send the message in the desktop app
+        speak("Message sent via desktop.")
+
+    except Exception as e:
+        print(f"Desktop app failed: {e}")
+        try:
+            # STEP 2: Fallback to Web WhatsApp
+            speak("Desktop app failed. Opening WhatsApp Web instead.")
+            web_url = (
+                f"https://web.whatsapp.com/send?phone={clean_number}&text={encoded_msg}"
+            )
+            webbrowser.open(web_url)
+            # Web takes longer to load (QR code/syncing)
+            speak(
+                "WhatsApp web opened."
+                "You may need to press send manually if not logged in."
+            )
+        except Exception as web_e:
+            print(f"Web fallback failed: {web_e}")
+            speak("Sorry, I couldn't send the message at all.")
+            try:
+                pywhatkit.sendwhatmsg_instantly(f"+{number}", message)
+                speak("Message sent.")
+            except Exception as final_e:
+                print(f"Final fallback failed: {final_e}")
+                speak("Sorry, I couldn't send the message. Let me try another way.")
 
 
 # ? Function to take a screenshot and save it as a file
