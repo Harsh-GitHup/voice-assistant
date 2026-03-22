@@ -274,42 +274,6 @@ def get_weather(city: str | None = None):
         return None
 
 
-def get_weather_():
-    api_key = os.getenv("WEATHER_API_KEY")
-    if not api_key:
-        speak("Weather API key is missing in environment variables.")
-        return None
-    speak("Which city's weather would you like to know?")
-    city_name = listen_command()
-    if not city_name:
-        speak("I didn't catch the city name. Please try again.")
-        return None
-    safe_city = quote_plus(city_name.strip())
-    url = (
-        f"http://api.openweathermap.org/data/2.5/weather?q={safe_city}&appid={api_key}"
-    )
-    try:
-        response = requests.get(url, timeout=5).json()
-        weather = response.get("weather")
-        main_data = response.get("main")
-        if not weather or not main_data:
-            speak("Sorry, I couldn't fetch weather details for that city.")
-            return None
-
-        weather_description = weather[0]["description"]
-        temperature = main_data["temp"]
-        temperature = temperature - 273.15  # Convert from Kelvin to Celsius
-        temperature = round(temperature, 2)
-        speak(
-            f"The temperature in {city_name} is {temperature} degrees Celsius. And the weather is {weather_description}."
-        )
-    except (requests.exceptions.RequestException, KeyError, TypeError, ValueError) as e:
-        print("Error fetching weather data:", e)
-        speak(
-            "Sorry, I couldn't fetch the weather. Please check your internet connection."
-        )
-
-
 # ? Function to send an email using SMTP protocol
 def send_email():
     sender_email = os.getenv("EMAIL_ADDRESS")
@@ -362,62 +326,6 @@ def play_music(query):
         if not music:
             speak("Which song?")
             music = listen_command()
-        if not music:
-            speak("Please specify a song name.")
-            return
-
-        if "spotify" in query:
-            possible_paths = [
-                os.path.expandvars(r"%AppData%\Spotify\Spotify.exe"),
-                os.path.expandvars(r"%LocalAppData%\Microsoft\WindowsApps\Spotify.exe"),
-                r"C:\Program Files\Spotify\Spotify.exe",
-                r"C:\Program Files (x86)\Spotify\Spotify.exe",
-            ]
-            spotify_path = next(
-                (path for path in possible_paths if os.path.exists(path)), None
-            )
-
-            if spotify_path:
-                try:
-                    spotify_uri = f"spotify:search:{quote_plus(music)}"
-                    try:
-                        subprocess.Popen([spotify_path, spotify_uri])
-                    except Exception:
-                        subprocess.Popen([spotify_path])
-                    speak(f"Opened Spotify for {music}.")
-                    return
-                except Exception as e:
-                    print("Spotify launch error:", e)
-                    speak("Couldn't start playback in Spotify.")
-                    speak("Playing on YouTube instead.")
-                _play_on_youtube(music)
-            else:
-                speak("Spotify app not found.")
-
-            spotify_web_url = f"https://open.spotify.com/search/{quote_plus(music)}"
-            try:
-                webbrowser.open(spotify_web_url)
-                speak(f"Opened Spotify web player for {music}.")
-                return
-            except Exception as e:
-                print("Spotify web player error:", e)
-                speak("Playing on YouTube instead.")
-
-            _play_on_youtube(music)
-            return
-
-        speak("Playing song...")
-        _play_on_youtube(music)
-    except Exception as e:
-        print("Sorry, I couldn't play the song.", e)
-        speak("Sorry, I couldn't play the song. Please try again later.")
-
-
-def play_music_(query):
-    try:
-        speak("Which song?")
-        music = listen_command()
-
         if not music:
             speak("Please specify a song name.")
             return
