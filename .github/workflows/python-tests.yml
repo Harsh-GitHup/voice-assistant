@@ -12,6 +12,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - name: Checkout code
@@ -64,5 +67,5 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
-          file: ./coverage.xml
-          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          use_oidc: true

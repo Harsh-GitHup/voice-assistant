@@ -44,6 +44,7 @@ dependencies = [
     "pypng>=0.20220715.0",
     "selenium>=4.10.0",
     "pillow>=10.4.0",
+    "pystray>=0.19.5",
 ]
 
 [dependency-groups]
